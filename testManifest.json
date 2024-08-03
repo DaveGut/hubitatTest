@@ -115,7 +115,7 @@
       "id": "136c0b05-d6d8-49bb-9177-16263786d290",
       "name": "MultiPlugSwitch:  Plug",
       "namespace": "davegut",
-      "location": "https://raw.githubusercontent.com/DaveGut/hubitatTest/main/Drivers/tpLink_plug_multi_child.groovy",
+      "location": "https://raw.githubusercontent.com/DaveGut/hubitatTest/main/Drivers/tpLink_child_plug.groovy",
       "required": false
     },
     {
