@@ -5,7 +5,7 @@ License:  https://github.com/DaveGut/HubitatActive/blob/master/KasaDevices/Licen
 =================================================================================================*/
 
 metadata {
-	definition (name: "tpLink Hub TempHumidity", namespace: nameSpace(), author: "Dave Gutheinz", 
+	definition (name: "TpLink Hub TempHumidity", namespace: nameSpace(), author: "Dave Gutheinz", 
 				importUrl: "https://raw.githubusercontent.com/DaveGut/tpLink_Hubitat/main/Drivers/tpLink_hub_tempHumidity.groovy")
 	{
 		capability "Refresh"
