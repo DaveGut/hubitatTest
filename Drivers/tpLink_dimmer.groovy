@@ -2,16 +2,18 @@
 		Copyright Dave Gutheinz
 License:  https://github.com/DaveGut/HubitatActive/blob/master/KasaDevices/License.md
 
-Supports:  Tapo Plugs and Switches, New and Matter Kasa Plugs and Switches.
+Replaces to tpLink_bulb_dimmer and tpLink_plug_dimmer
 
-Verified on P125M(US).
+Verified on L530E(US) and L535E(US) (working as dimmer only).
 =================================================================================================*/
+//	=====	NAMESPACE	in library davegut.Logging	============
 
 metadata {
-	definition (name: "TpLink Plug", namespace: nameSpace(), author: "Dave Gutheinz", 
+	definition (name: "TpLink Dimmer", namespace: nameSpace(), author: "Dave Gutheinz", 
 				singleThreaded: true,
-				importUrl: "https://raw.githubusercontent.com/DaveGut/tpLink_Hubitat/main/Drivers/tpLink_plug.groovy")
+				importUrl: "https://raw.githubusercontent.com/DaveGut/tpLink_Hubitat/main/Drivers/tpLink_dimmer.groovy")
 	{
+		capability "Light"
 	}
 	preferences {
 		input ("ledRule", "enum", title: "LED Mode (if night mode, set type and times in phone app)",
@@ -39,10 +41,15 @@ def parse_get_device_info(result, data) {
 		state.eventType = "physical"
 		logData << [switch: onOff]
 	}
+	updateAttr("level", result.brightness)
+	logData << [level: result.brightness]
+
 	logDebug(logData)
 }
 
+//	Library Inclusion
 
+Level
 
 
 
@@ -78,6 +85,123 @@ def setPower(onOff) { // library marker davegut.tpLinkCapSwitch, line 16
 } // library marker davegut.tpLinkCapSwitch, line 27
 
 // ~~~~~ end include (51) davegut.tpLinkCapSwitch ~~~~~
+
+// ~~~~~ start include (61) davegut.tpLinkCapSwitchLevel ~~~~~
+library ( // library marker davegut.tpLinkCapSwitchLevel, line 1
+	name: "tpLinkCapSwitchLevel", // library marker davegut.tpLinkCapSwitchLevel, line 2
+	namespace: "davegut", // library marker davegut.tpLinkCapSwitchLevel, line 3
+	author: "Compied by Dave Gutheinz", // library marker davegut.tpLinkCapSwitchLevel, line 4
+	description: "Hubitat capability Switch Level and Change Level methods", // library marker davegut.tpLinkCapSwitchLevel, line 5
+	category: "utilities", // library marker davegut.tpLinkCapSwitchLevel, line 6
+	documentationLink: "" // library marker davegut.tpLinkCapSwitchLevel, line 7
+) // library marker davegut.tpLinkCapSwitchLevel, line 8
+
+capability "Switch Level" // library marker davegut.tpLinkCapSwitchLevel, line 10
+capability "Change Level" // library marker davegut.tpLinkCapSwitchLevel, line 11
+
+def setLevel(level, transTime=0) { // library marker davegut.tpLinkCapSwitchLevel, line 13
+	logDebug([method: "setLevel", level: level, transTime: transTime]) // library marker davegut.tpLinkCapSwitchLevel, line 14
+	if (level == null) { level = device.currentValue("level") toInteger() } // library marker davegut.tpLinkCapSwitchLevel, line 15
+	if (transTime < 0) { transTime = 0 } // library marker davegut.tpLinkCapSwitchLevel, line 16
+	if (transTime > 0) { // library marker davegut.tpLinkCapSwitchLevel, line 17
+		startLevelTransition(level, transTime) // library marker davegut.tpLinkCapSwitchLevel, line 18
+	} else { // library marker davegut.tpLinkCapSwitchLevel, line 19
+		if (level == 0) { // library marker davegut.tpLinkCapSwitchLevel, line 20
+			off() // library marker davegut.tpLinkCapSwitchLevel, line 21
+		} else { // library marker davegut.tpLinkCapSwitchLevel, line 22
+			List requests = [[ // library marker davegut.tpLinkCapSwitchLevel, line 23
+				method: "set_device_info", // library marker davegut.tpLinkCapSwitchLevel, line 24
+				params: [ // library marker davegut.tpLinkCapSwitchLevel, line 25
+					brightness: level // library marker davegut.tpLinkCapSwitchLevel, line 26
+				]]] // library marker davegut.tpLinkCapSwitchLevel, line 27
+			requests << [method: "get_device_info"] // library marker davegut.tpLinkCapSwitchLevel, line 28
+			sendDevCmd(requests, "setLevel", "parseUpdates") // library marker davegut.tpLinkCapSwitchLevel, line 29
+		} // library marker davegut.tpLinkCapSwitchLevel, line 30
+	} // library marker davegut.tpLinkCapSwitchLevel, line 31
+} // library marker davegut.tpLinkCapSwitchLevel, line 32
+
+def startLevelTransition(level, transTime) { // library marker davegut.tpLinkCapSwitchLevel, line 34
+	def startTime = (now()/1000).toInteger() // library marker davegut.tpLinkCapSwitchLevel, line 35
+	def endTime = startTime + transTime // library marker davegut.tpLinkCapSwitchLevel, line 36
+	Map transData = [endTime: endTime, targetLevel: level, cmdIncr: 180] // library marker davegut.tpLinkCapSwitchLevel, line 37
+	//	Command increment derived from experimentation with Tapo Lan devices. // library marker davegut.tpLinkCapSwitchLevel, line 38
+	def totalIncrs = (transTime * 5).toInteger() // library marker davegut.tpLinkCapSwitchLevel, line 39
+
+	//	Level Increment (based on total level Change, cmdIncr, and transTime) // library marker davegut.tpLinkCapSwitchLevel, line 41
+	def currLevel = device.currentValue("level").toInteger() // library marker davegut.tpLinkCapSwitchLevel, line 42
+	def levelChange = level - currLevel // library marker davegut.tpLinkCapSwitchLevel, line 43
+	def levelIncr = levelChange/totalIncrs // library marker davegut.tpLinkCapSwitchLevel, line 44
+	if (levelIncr < 0 ) { levelIncr = (levelIncr - 0.5).toInteger() } // library marker davegut.tpLinkCapSwitchLevel, line 45
+	else { levelIncr = (levelIncr + 0.5).toInteger() } // library marker davegut.tpLinkCapSwitchLevel, line 46
+	transData << [currLevel: currLevel, levelIncr: levelIncr] // library marker davegut.tpLinkCapSwitchLevel, line 47
+
+	logDebug([method: "startCtTransition", transData: transData]) // library marker davegut.tpLinkCapSwitchLevel, line 49
+	doLevelTransition(transData) // library marker davegut.tpLinkCapSwitchLevel, line 50
+} // library marker davegut.tpLinkCapSwitchLevel, line 51
+
+def doLevelTransition(Map transData) { // library marker davegut.tpLinkCapSwitchLevel, line 53
+	def newLevel = transData.targetLevel // library marker davegut.tpLinkCapSwitchLevel, line 54
+	def doAgain = true // library marker davegut.tpLinkCapSwitchLevel, line 55
+	def curTime = (now()/1000).toInteger() // library marker davegut.tpLinkCapSwitchLevel, line 56
+	if (newLevel == transData.currLevel || curTime >= transData.endTime) { // library marker davegut.tpLinkCapSwitchLevel, line 57
+		doAgain = false // library marker davegut.tpLinkCapSwitchLevel, line 58
+	} else { // library marker davegut.tpLinkCapSwitchLevel, line 59
+		newLevel = transData.currLevel + transData.levelIncr // library marker davegut.tpLinkCapSwitchLevel, line 60
+		if (transData.levelIncr >= 0 && newLevel > transData.targetLevel) { // library marker davegut.tpLinkCapSwitchLevel, line 61
+			newLevel = transData.targetLevel // library marker davegut.tpLinkCapSwitchLevel, line 62
+		} else if (transData.levelIncr < 0 && newLevel < transData.targetLevel) { // library marker davegut.tpLinkCapSwitchLevel, line 63
+			newLevel = transData.targetLevel // library marker davegut.tpLinkCapSwitchLevel, line 64
+		} // library marker davegut.tpLinkCapSwitchLevel, line 65
+	} // library marker davegut.tpLinkCapSwitchLevel, line 66
+	transData << [currLevel: newLevel] // library marker davegut.tpLinkCapSwitchLevel, line 67
+	if (currLevel != 0) { // library marker davegut.tpLinkCapSwitchLevel, line 68
+		sendSingleCmd([method: "set_device_info", params: [brightness: newLevel]], // library marker davegut.tpLinkCapSwitchLevel, line 69
+				  "doLevelTransition", "nullParse") // library marker davegut.tpLinkCapSwitchLevel, line 70
+		if (doAgain == true) { // library marker davegut.tpLinkCapSwitchLevel, line 71
+			runInMillis(transData.cmdIncr, doLevelTransition, [data: transData]) // library marker davegut.tpLinkCapSwitchLevel, line 72
+		} else { // library marker davegut.tpLinkCapSwitchLevel, line 73
+			runInMillis(500, setLevel, [data: transData.targetLevel]) // library marker davegut.tpLinkCapSwitchLevel, line 74
+		} // library marker davegut.tpLinkCapSwitchLevel, line 75
+	} else { // library marker davegut.tpLinkCapSwitchLevel, line 76
+		off() // library marker davegut.tpLinkCapSwitchLevel, line 77
+	} // library marker davegut.tpLinkCapSwitchLevel, line 78
+} // library marker davegut.tpLinkCapSwitchLevel, line 79
+
+def startLevelChange(direction) { // library marker davegut.tpLinkCapSwitchLevel, line 81
+	logDebug("startLevelChange: [level: ${device.currentValue("level")}, direction: ${direction}]") // library marker davegut.tpLinkCapSwitchLevel, line 82
+	if (direction == "up") { levelUp() } // library marker davegut.tpLinkCapSwitchLevel, line 83
+	else { levelDown() } // library marker davegut.tpLinkCapSwitchLevel, line 84
+} // library marker davegut.tpLinkCapSwitchLevel, line 85
+
+def stopLevelChange() { // library marker davegut.tpLinkCapSwitchLevel, line 87
+	logDebug("stopLevelChange: [level: ${device.currentValue("level")}]") // library marker davegut.tpLinkCapSwitchLevel, line 88
+	unschedule(levelUp) // library marker davegut.tpLinkCapSwitchLevel, line 89
+	unschedule(levelDown) // library marker davegut.tpLinkCapSwitchLevel, line 90
+} // library marker davegut.tpLinkCapSwitchLevel, line 91
+
+def levelUp() { // library marker davegut.tpLinkCapSwitchLevel, line 93
+	def curLevel = device.currentValue("level").toInteger() // library marker davegut.tpLinkCapSwitchLevel, line 94
+	if (curLevel != 100) { // library marker davegut.tpLinkCapSwitchLevel, line 95
+		def newLevel = curLevel + 4 // library marker davegut.tpLinkCapSwitchLevel, line 96
+		if (newLevel > 100) { newLevel = 100 } // library marker davegut.tpLinkCapSwitchLevel, line 97
+		setLevel(newLevel) // library marker davegut.tpLinkCapSwitchLevel, line 98
+		runIn(1, levelUp) // library marker davegut.tpLinkCapSwitchLevel, line 99
+	} // library marker davegut.tpLinkCapSwitchLevel, line 100
+} // library marker davegut.tpLinkCapSwitchLevel, line 101
+
+def levelDown() { // library marker davegut.tpLinkCapSwitchLevel, line 103
+	def curLevel = device.currentValue("level").toInteger() // library marker davegut.tpLinkCapSwitchLevel, line 104
+	if (device.currentValue("switch") == "on") { // library marker davegut.tpLinkCapSwitchLevel, line 105
+		def newLevel = curLevel - 4 // library marker davegut.tpLinkCapSwitchLevel, line 106
+		if (newLevel <= 0) { off() } // library marker davegut.tpLinkCapSwitchLevel, line 107
+		else { // library marker davegut.tpLinkCapSwitchLevel, line 108
+			setLevel(newLevel) // library marker davegut.tpLinkCapSwitchLevel, line 109
+			runIn(1, levelDown) // library marker davegut.tpLinkCapSwitchLevel, line 110
+		} // library marker davegut.tpLinkCapSwitchLevel, line 111
+	} // library marker davegut.tpLinkCapSwitchLevel, line 112
+} // library marker davegut.tpLinkCapSwitchLevel, line 113
+
+// ~~~~~ end include (61) davegut.tpLinkCapSwitchLevel ~~~~~
 
 // ~~~~~ start include (64) davegut.tpLinkCommon ~~~~~
 library ( // library marker davegut.tpLinkCommon, line 1

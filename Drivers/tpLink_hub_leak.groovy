@@ -2,18 +2,16 @@
 		Copyright Dave Gutheinz
 License:  https://github.com/DaveGut/HubitatActive/blob/master/KasaDevices/License.md
 
-Verified on S200B Button.
+Verified on T300 Leak Sensor.
 =================================================================================================*/
 
 metadata {
-	definition (name: "TpLink Hub Button", namespace: nameSpace(), author: "Dave Gutheinz", 
-				singleInstance: true,
-				importUrl: "https://raw.githubusercontent.com/DaveGut/tpLink_Hubitat/main/Drivers/tpLink_hub_button.groovy")
+	definition (name: "TpLink Hub Leak", namespace: nameSpace(), author: "Dave Gutheinz", 
+				importUrl: "https://raw.githubusercontent.com/DaveGut/tpLink_Hubitat/main/Drivers/tpLink_hub_leak.groovy")
 	{
 		capability "Refresh"
-		capability "Sensor"
-		attribute "button", "STRING"
-		attribute "lastTriggerNo", "NUMBER"
+		capability "Water Sensor"
+		capability "Battery"
 		attribute "lowBattery", "string"
 	}
 	preferences {
@@ -32,9 +30,6 @@ def updated() {
 		unschedule()
 		def logData = [method: "updated"]
 		logData << setLogsOff()
-		def start = Math.round((5) * Math.random()).toInteger()
-		schedule("${start}/5 * * * * ?", getTriggerLog)
-		logData << [triggerLogInterval: "5 secs"]
 		logInfo(logData)
 	}
 	pauseExecution(5000)
@@ -42,10 +37,13 @@ def updated() {
 
 def refresh() { parent.refresh() }
 
-//	Parse Methods
 def parseDevData(childData) {
 	try {
+		def wetDry = "wet"
+		if (childData.water_leak_status == "water_dry") { wetDry = "dry" }
+		updateAttr("water", wetDry)
 		updateAttr("lowBattery", childData.at_low_battery.toString())
+		updateAttr("battery", childData.battery_percentage)
 	} catch (err) {
 		logWarn([method: "parseDevData", status: "FAILED", error: err])
 	}
@@ -65,32 +63,10 @@ def getTriggerLog(count = 1) {
 	parent.asyncSend(cmdBody, device.getDeviceNetworkId(), "distTriggerLog")
 }
 
-def parseTriggerLog(Map triggerData, data=null) {
-	Map triggerLog = triggerData.result.responseData
-	if (triggerLog != null) {
-		triggerLog = triggerLog.result
-		if (triggerLog && device.currentValue("lastTriggerNo") != triggerLog.start_id) {
-			updateAttr("lastTriggerNo", triggerLog.start_id)
-			def thisTrigger = triggerLog.logs[0]
-			def trigger = thisTrigger.event
-			if (trigger == "rotation") {
-				if (thisTrigger.params.rotate_deg >= 0) {
-					trigger = "rotateCW"
-				} else {
-					trigger = "rotateCCW"
-				}
-			}
-			sendEvent(name: "button", value: trigger, isStateChange: true)
-		} else {
-			Map logData = [method: "parseTriggerLog", status: "NEW DEVICE.  NO LOGS.",
-						   triggerData: triggerData, error: err]
-			logDebug(logData)
-		}
-		if (getTriggerLogs) {
-			log.info "<b>TRIGGERLOGS</b>: ${triggerLog.logs}"
-			device.updateSetting("getTriggerLogs", [type:"bool", value: false])
-		}
-	}
+def parseTriggerLog(triggerData, data=null) {
+	def triggerLog = triggerData.result.responseData.result
+	log.info "<b>TRIGGERLOGS</b>: ${triggerLog.logs}"
+	device.updateSetting("getTriggerLogs", [type:"bool", value: false])
 }
 
 def updateAttr(attr, value) {
