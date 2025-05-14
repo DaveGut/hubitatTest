@@ -11,7 +11,7 @@
   "apps": [
     {
       "id": "79f31830-a697-40c5-9c87-76f9db0c63b7",
-      "name": "Tapo Device Install",
+      "name": "Tapo Integration",
       "namespace": "davegut",
       "location": "https://raw.githubusercontent.com/DaveGut/tpLink_Hubitat/main/App/tapo_device_install.groovy",
       "required": true,
@@ -22,7 +22,7 @@
   "drivers": [
     {
       "id": "da263b7d-5b17-468a-836e-86ef98b11187",
-      "name": "Color Bulb",
+      "name": "TpLink Color Bulb",
       "namespace": "davegut",
       "location": "https://raw.githubusercontent.com/DaveGut/tpLink_Hubitat/main/Drivers/tpLink_color_bulb.groovy",
       "required": false
