@@ -22,7 +22,7 @@
   "drivers": [
     {
       "id": "da263b7d-5b17-468a-836e-86ef98b11187",
-      "name": "Color Bulb",
+      "name": "TpLink Color Bulb",
       "namespace": "davegut",
       "location": "https://raw.githubusercontent.com/DaveGut/hubitatTest/main/Drivers/tpLink_color_bulb.groovy",
       "required": false
