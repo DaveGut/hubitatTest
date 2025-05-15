@@ -28,7 +28,7 @@
     },
     {
       "id": "ec486eae-0c27-4e79-bcd2-77afbb4013f0",
-      "name": "TpLink Light Strip",
+      "name": "TpLink Lightstrip",
       "namespace": "davegut",
       "location": "https://raw.githubusercontent.com/DaveGut/tpLink_Hubitat/main/Drivers/tpLink_lightStrip.groovy",
       "required": false
