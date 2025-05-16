@@ -6,7 +6,7 @@
       "name": "TAPO Device Integration",
       "category": "Integrations",
       "tags": ["Lights & Switches", "Cleaning Devices", "Energy Monitoring"],
-      "location": "https://raw.githubusercontent.com/DaveGut/hubitatTest/refs/heads/main/testManifest.json",
+      "location": "https://raw.githubusercontent.com/DaveGut/hubitatTest/refs/heads/main/packageManifest.json",
       "description": "TAPO Plugs, Switches, Bulbs and Kasa Matter(only) devices integration"
     }
   ]
