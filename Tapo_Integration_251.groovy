@@ -1028,335 +1028,297 @@ def parseklap1Handshake(resp, data) { // library marker davegut.tpLinkTransKlap1
 		} // library marker davegut.tpLinkTransKlap1, line 49
 			byte[] remoteSeed = seedData[0 .. 15] // library marker davegut.tpLinkTransKlap1, line 50
 			byte[] serverHash = seedData[16 .. 47] // library marker davegut.tpLinkTransKlap1, line 51
-			if (device) { // library marker davegut.tpLinkTransKlap1, line 52
-				userName = parent.userName // library marker davegut.tpLinkTransKlap1, line 53
-				userPassword = parent.userPassword // library marker davegut.tpLinkTransKlap1, line 54
-			} // library marker davegut.tpLinkTransKlap1, line 55
-			byte[] unHashMd = mdEncode("SHA-1", encodeUtf8(userName).getBytes()) // library marker davegut.tpLinkTransKlap1, line 56
-			byte[] pwHashMd = mdEncode("SHA-1", encodeUtf8(userPassword).getBytes()) // library marker davegut.tpLinkTransKlap1, line 57
-			byte[] unPwHashByte = [unHashMd, pwHashMd].flatten() // library marker davegut.tpLinkTransKlap1, line 58
-			byte[] unPwHashMd = mdEncode("SHA-256", unPwHashByte) // library marker davegut.tpLinkTransKlap1, line 59
-			byte[] authHash = [localSeed, remoteSeed, unPwHashMd].flatten() // library marker davegut.tpLinkTransKlap1, line 60
-			byte[] serverAuthHash = mdEncode("SHA-256", authHash) // library marker davegut.tpLinkTransKlap1, line 61
-//////////////////// // library marker davegut.tpLinkTransKlap1, line 62
-testData = [step: "handshake1", un: userName, pw: userPassword, serverAuthHash: serverAuthHash, serverHash: serverHash] // library marker davegut.tpLinkTransKlap1, line 63
-log.trace testData // library marker davegut.tpLinkTransKlap1, line 64
-/////////////////// // library marker davegut.tpLinkTransKlap1, line 65
+			//	Locally create localHash // library marker davegut.tpLinkTransKlap1, line 52
+			if (device) { // library marker davegut.tpLinkTransKlap1, line 53
+				userName = parent.userName // library marker davegut.tpLinkTransKlap1, line 54
+				userPassword = parent.userPassword // library marker davegut.tpLinkTransKlap1, line 55
+			} // library marker davegut.tpLinkTransKlap1, line 56
+			byte[] unHashMd = mdEncode("SHA-1", encodeUtf8(userName).getBytes()) // library marker davegut.tpLinkTransKlap1, line 57
+			byte[] pwHashMd = mdEncode("SHA-1", encodeUtf8(userPassword).getBytes()) // library marker davegut.tpLinkTransKlap1, line 58
+			byte[] unPwHashByte = [unHashMd, pwHashMd].flatten() // library marker davegut.tpLinkTransKlap1, line 59
+			byte[] unPwHashMd = mdEncode("SHA-256", unPwHashByte)		//	localHash // library marker davegut.tpLinkTransKlap1, line 60
+			byte[] authHash = [localSeed, remoteSeed, unPwHashMd].flatten() // library marker davegut.tpLinkTransKlap1, line 61
+			byte[] localAuthHash = mdEncode("SHA-256", authHash) // library marker davegut.tpLinkTransKlap1, line 62
+//////////////////// // library marker davegut.tpLinkTransKlap1, line 63
+//testData = [step: "handshake1", un: userName, pw: userPassword, serverAuthHash: serverAuthHash, serverHash: serverHash] // library marker davegut.tpLinkTransKlap1, line 64
+//log.trace testData // library marker davegut.tpLinkTransKlap1, line 65
+/////////////////// // library marker davegut.tpLinkTransKlap1, line 66
 
-			if (serverAuthHash == serverHash) { // library marker davegut.tpLinkTransKlap1, line 67
-log.debug "<b>SUCCESS.  Handshake 1 Complete.  Start Handshake 2 testing</b>" // library marker davegut.tpLinkTransKlap1, line 68
-				def cookieHeader = resp.headers["Set-Cookie"].toString() // library marker davegut.tpLinkTransKlap1, line 69
-				def cookie = null // library marker davegut.tpLinkTransKlap1, line 70
-				if (cookieHeader != null) { // library marker davegut.tpLinkTransKlap1, line 71
-					cookie = cookieHeader.substring(cookieHeader.indexOf(":") +1, cookieHeader.indexOf(";")) // library marker davegut.tpLinkTransKlap1, line 72
-				} // library marker davegut.tpLinkTransKlap1, line 73
-				//	seqNo and encIv // library marker davegut.tpLinkTransKlap1, line 74
-				byte[] payload = ["iv".getBytes(), localSeed, remoteSeed, authHash].flatten() // library marker davegut.tpLinkTransKlap1, line 75
-				byte[] fullIv = mdEncode("SHA-256", payload) // library marker davegut.tpLinkTransKlap1, line 76
-				byte[] byteSeqNo = fullIv[-4..-1] // library marker davegut.tpLinkTransKlap1, line 77
+			if (localAuthHash == serverHash) { // library marker davegut.tpLinkTransKlap1, line 68
+log.debug "<b>SUCCESS.  Handshake 1 Complete.  Start Handshake 2 testing</b>" // library marker davegut.tpLinkTransKlap1, line 69
+//////////////////// // library marker davegut.tpLinkTransKlap1, line 70
+testData = [step: "Calculate Params", localSeed: localSeed, remoteSeed: remoteSeed, authHash: authHash] // library marker davegut.tpLinkTransKlap1, line 71
+log.trace testData // library marker davegut.tpLinkTransKlap1, line 72
+/////////////////// // library marker davegut.tpLinkTransKlap1, line 73
+				def cookieHeader = resp.headers["Set-Cookie"].toString() // library marker davegut.tpLinkTransKlap1, line 74
+				def cookie = null // library marker davegut.tpLinkTransKlap1, line 75
+				if (cookieHeader != null) { // library marker davegut.tpLinkTransKlap1, line 76
+					cookie = cookieHeader.substring(cookieHeader.indexOf(":") +1, cookieHeader.indexOf(";")) // library marker davegut.tpLinkTransKlap1, line 77
+				} // library marker davegut.tpLinkTransKlap1, line 78
+				//	seqNo and encIv // library marker davegut.tpLinkTransKlap1, line 79
+// // library marker davegut.tpLinkTransKlap1, line 80
+				byte[] payload = ["iv".getBytes(), localSeed, remoteSeed, authHash].flatten() // library marker davegut.tpLinkTransKlap1, line 81
+				byte[] fullIv = mdEncode("SHA-256", payload) // library marker davegut.tpLinkTransKlap1, line 82
+				byte[] byteSeqNo = fullIv[-4..-1] // library marker davegut.tpLinkTransKlap1, line 83
 
-				int seqNo = byteArrayToInteger(byteSeqNo) // library marker davegut.tpLinkTransKlap1, line 79
-				atomicState.seqNo = seqNo // library marker davegut.tpLinkTransKlap1, line 80
+				int seqNo = byteArrayToInteger(byteSeqNo) // library marker davegut.tpLinkTransKlap1, line 85
+				atomicState.seqNo = seqNo // library marker davegut.tpLinkTransKlap1, line 86
 
-				//	encKey // library marker davegut.tpLinkTransKlap1, line 82
-				payload = ["lsk".getBytes(), localSeed, remoteSeed, authHash].flatten() // library marker davegut.tpLinkTransKlap1, line 83
-				byte[] encKey = mdEncode("SHA-256", payload)[0..15] // library marker davegut.tpLinkTransKlap1, line 84
-				//	encSig // library marker davegut.tpLinkTransKlap1, line 85
-				payload = ["ldk".getBytes(), localSeed, remoteSeed, authHash].flatten() // library marker davegut.tpLinkTransKlap1, line 86
-				byte[] encSig = mdEncode("SHA-256", payload)[0..27] // library marker davegut.tpLinkTransKlap1, line 87
-				if (device) { // library marker davegut.tpLinkTransKlap1, line 88
-					device.updateSetting("cookie",[type:"password", value: cookie])  // library marker davegut.tpLinkTransKlap1, line 89
-					device.updateSetting("encKey",[type:"password", value: encKey])  // library marker davegut.tpLinkTransKlap1, line 90
-					device.updateSetting("encIv",[type:"password", value: fullIv[0..11]])  // library marker davegut.tpLinkTransKlap1, line 91
-					device.updateSetting("encSig",[type:"password", value: encSig])  // library marker davegut.tpLinkTransKlap1, line 92
-				} else { // library marker davegut.tpLinkTransKlap1, line 93
-					reqData << [cookie: cookie, seqNo: seqNo, encIv: fullIv[0..11],  // library marker davegut.tpLinkTransKlap1, line 94
-								encSig: encSig, encKey: encKey] // library marker davegut.tpLinkTransKlap1, line 95
-				} // library marker davegut.tpLinkTransKlap1, line 96
-//		Doesn't follow other hashes (localSeed and locahHash only)?				 // library marker davegut.tpLinkTransKlap1, line 97
-				byte[] loginHash = [remoteSeed, localSeed, authHash].flatten()	//	Version = A // library marker davegut.tpLinkTransKlap1, line 98
-//				byte[] loginHash = [remoteSeed, authHash].flatten()		//	Version = B // library marker davegut.tpLinkTransKlap1, line 99
-				byte[] body = mdEncode("SHA-256", loginHash) // library marker davegut.tpLinkTransKlap1, line 100
-				Map reqParams = [uri: "${data.data.baseUrl}/handshake2", // library marker davegut.tpLinkTransKlap1, line 101
-								 body: body, // library marker davegut.tpLinkTransKlap1, line 102
-								 ignoreSSLIssues: true, // library marker davegut.tpLinkTransKlap1, line 103
-								 timeout:10, // library marker davegut.tpLinkTransKlap1, line 104
-								 headers: ["Cookie": cookie], // library marker davegut.tpLinkTransKlap1, line 105
-								 contentType: "application/octet-stream", // library marker davegut.tpLinkTransKlap1, line 106
-								 requestContentType: "application/octet-stream"] // library marker davegut.tpLinkTransKlap1, line 107
-				asynchttpPost("parseklap1Handshake2", reqParams, [data: reqData]) // library marker davegut.tpLinkTransKlap1, line 108
-/////////////////////////// // library marker davegut.tpLinkTransKlap1, line 109
-logData << [step: "handshake2", version: "A", reqData: reqData, reqParams: reqParams] // library marker davegut.tpLinkTransKlap1, line 110
-logTrace "<b>${logData}</b>" // library marker davegut.tpLinkTransKlap1, line 111
-///////////////////////// // library marker davegut.tpLinkTransKlap1, line 112
-			} else { // library marker davegut.tpLinkTransKlap1, line 113
-				logData << [respStatus: "ERROR: localAuthHash != serverHash", // library marker davegut.tpLinkTransKlap1, line 114
-							action: "<b>Check credentials and try again</b>"] // library marker davegut.tpLinkTransKlap1, line 115
-				logWarn(logData) // library marker davegut.tpLinkTransKlap1, line 116
-			} // library marker davegut.tpLinkTransKlap1, line 117
-		} catch (err) { // library marker davegut.tpLinkTransKlap1, line 118
-			logData << [respStatus: "ERROR parsing 200 response", resp: resp.properties, error: err] // library marker davegut.tpLinkTransKlap1, line 119
-			logData << [action: "<b>Try Configure command</b>"] // library marker davegut.tpLinkTransKlap1, line 120
-			logWarn(logData) // library marker davegut.tpLinkTransKlap1, line 121
-		} // library marker davegut.tpLinkTransKlap1, line 122
-	} else { // library marker davegut.tpLinkTransKlap1, line 123
-		logData << [respStatus: resp.status, message: resp.errorMessage] // library marker davegut.tpLinkTransKlap1, line 124
-		logData << [action: "<b>Try Configure command</b>"] // library marker davegut.tpLinkTransKlap1, line 125
-		logWarn(logData) // library marker davegut.tpLinkTransKlap1, line 126
-	} // library marker davegut.tpLinkTransKlap1, line 127
-} // library marker davegut.tpLinkTransKlap1, line 128
+				//	encKey // library marker davegut.tpLinkTransKlap1, line 88
+				payload = ["lsk".getBytes(), localSeed, remoteSeed, authHash].flatten() // library marker davegut.tpLinkTransKlap1, line 89
+				byte[] encKey = mdEncode("SHA-256", payload)[0..15] // library marker davegut.tpLinkTransKlap1, line 90
+				//	encSig // library marker davegut.tpLinkTransKlap1, line 91
+				payload = ["ldk".getBytes(), localSeed, remoteSeed, authHash].flatten() // library marker davegut.tpLinkTransKlap1, line 92
+				byte[] encSig = mdEncode("SHA-256", payload)[0..27] // library marker davegut.tpLinkTransKlap1, line 93
+				if (device) { // library marker davegut.tpLinkTransKlap1, line 94
+					device.updateSetting("cookie",[type:"password", value: cookie])  // library marker davegut.tpLinkTransKlap1, line 95
+					device.updateSetting("encKey",[type:"password", value: encKey])  // library marker davegut.tpLinkTransKlap1, line 96
+					device.updateSetting("encIv",[type:"password", value: fullIv[0..11]])  // library marker davegut.tpLinkTransKlap1, line 97
+					device.updateSetting("encSig",[type:"password", value: encSig])  // library marker davegut.tpLinkTransKlap1, line 98
+				} else { // library marker davegut.tpLinkTransKlap1, line 99
+					reqData << [cookie: cookie, seqNo: seqNo, encIv: fullIv[0..11],  // library marker davegut.tpLinkTransKlap1, line 100
+								encSig: encSig, encKey: encKey] // library marker davegut.tpLinkTransKlap1, line 101
+				} // library marker davegut.tpLinkTransKlap1, line 102
+/* // library marker davegut.tpLinkTransKlap1, line 103
+Current error is forbiden.  This is typically caused by the loginHash  // library marker davegut.tpLinkTransKlap1, line 104
+being incorrect. I tested incorrect cookie - different failure.   // library marker davegut.tpLinkTransKlap1, line 105
+There are two possibilities here: // library marker davegut.tpLinkTransKlap1, line 106
+a.  creating body does not user remoteSeed, localSeed, authHash // library marker davegut.tpLinkTransKlap1, line 107
+b.	uses incorrect encode method (currently "SHA-256") // library marker davegut.tpLinkTransKlap1, line 108
+Investigation of python design source, there are two possibilities // library marker davegut.tpLinkTransKlap1, line 109
+for the body, one using all three seeds (version A) and one // library marker davegut.tpLinkTransKlap1, line 110
+using remoteSeed and authHash only. // library marker davegut.tpLinkTransKlap1, line 111
 
-def parseklap1Handshake2(resp, data) { // library marker davegut.tpLinkTransKlap1, line 130
-///////////////////////////// // library marker davegut.tpLinkTransKlap1, line 131
-//Map testData = [DATA: "methodInput", data: data, resp: resp.properties] // library marker davegut.tpLinkTransKlap1, line 132
-Map testData = [DATA: "parseHandshake2Input", data: data, resp: resp.properties] // library marker davegut.tpLinkTransKlap1, line 133
-log.trace "<b>${testData}</b>" // library marker davegut.tpLinkTransKlap1, line 134
-///////////////////////// // library marker davegut.tpLinkTransKlap1, line 135
-//	Change: move sendKlap1DataCmd call.  Changes error from logInfo to logWarn  (change Klap also) // library marker davegut.tpLinkTransKlap1, line 136
-	Map logData = [method: "parseklap1Handshake2"] // library marker davegut.tpLinkTransKlap1, line 137
-	if (resp.status == 200 && resp.data == null) { // library marker davegut.tpLinkTransKlap1, line 138
-		logData << [respStatus: "Login OK"] // library marker davegut.tpLinkTransKlap1, line 139
-		setCommsError(200) // library marker davegut.tpLinkTransKlap1, line 140
-		logDebug(logData) // library marker davegut.tpLinkTransKlap1, line 141
-		if (!device) { sendklap1DataCmd(logData, data) } // library marker davegut.tpLinkTransKlap1, line 142
+Last try was using all three hashes in body.  This try (version B) // library marker davegut.tpLinkTransKlap1, line 113
+uses only remoteSeed and authHash. // library marker davegut.tpLinkTransKlap1, line 114
+
+*/ // library marker davegut.tpLinkTransKlap1, line 116
+//		Doesn't follow other hashes (localSeed and locahHash only)?				 // library marker davegut.tpLinkTransKlap1, line 117
+//				byte[] loginHash = [remoteSeed, localSeed, authHash].flatten()	//	Version = A // library marker davegut.tpLinkTransKlap1, line 118
+				byte[] loginHash = [remoteSeed, authHash].flatten()		//	Version = B // library marker davegut.tpLinkTransKlap1, line 119
+				byte[] body = mdEncode("SHA-256", loginHash) // library marker davegut.tpLinkTransKlap1, line 120
+				Map reqParams = [uri: "${data.data.baseUrl}/handshake2", // library marker davegut.tpLinkTransKlap1, line 121
+								 body: body, // library marker davegut.tpLinkTransKlap1, line 122
+								 ignoreSSLIssues: true, // library marker davegut.tpLinkTransKlap1, line 123
+								 timeout:10, // library marker davegut.tpLinkTransKlap1, line 124
+								 headers: ["Cookie": cookie], // library marker davegut.tpLinkTransKlap1, line 125
+								 contentType: "application/octet-stream", // library marker davegut.tpLinkTransKlap1, line 126
+								 requestContentType: "application/octet-stream"] // library marker davegut.tpLinkTransKlap1, line 127
+/////////////////////////// // library marker davegut.tpLinkTransKlap1, line 128
+logData << [step: "handshake2", version: "B", reqData: reqData, reqParams: reqParams] // library marker davegut.tpLinkTransKlap1, line 129
+logTrace "<b>${logData}</b>" // library marker davegut.tpLinkTransKlap1, line 130
+///////////////////////// // library marker davegut.tpLinkTransKlap1, line 131
+				asynchttpPost("parseklap1Handshake2", reqParams, [data: reqData]) // library marker davegut.tpLinkTransKlap1, line 132
+			} else { // library marker davegut.tpLinkTransKlap1, line 133
+				logData << [respStatus: "ERROR: localAuthHash != serverHash", // library marker davegut.tpLinkTransKlap1, line 134
+							action: "<b>Check credentials and try again</b>"] // library marker davegut.tpLinkTransKlap1, line 135
+				logWarn(logData) // library marker davegut.tpLinkTransKlap1, line 136
+			} // library marker davegut.tpLinkTransKlap1, line 137
+		} catch (err) { // library marker davegut.tpLinkTransKlap1, line 138
+			logData << [respStatus: "ERROR parsing 200 response", resp: resp.properties, error: err] // library marker davegut.tpLinkTransKlap1, line 139
+			logData << [action: "<b>Try Configure command</b>"] // library marker davegut.tpLinkTransKlap1, line 140
+			logWarn(logData) // library marker davegut.tpLinkTransKlap1, line 141
+		} // library marker davegut.tpLinkTransKlap1, line 142
 	} else { // library marker davegut.tpLinkTransKlap1, line 143
-		logData << [respStatus: "LOGIN FAILED", reason: "ERROR in HTTP response", // library marker davegut.tpLinkTransKlap1, line 144
-					resp: resp.properties] // library marker davegut.tpLinkTransKlap1, line 145
+		logData << [respStatus: resp.status, message: resp.errorMessage] // library marker davegut.tpLinkTransKlap1, line 144
+		logData << [action: "<b>Try Configure command</b>"] // library marker davegut.tpLinkTransKlap1, line 145
 		logWarn(logData) // library marker davegut.tpLinkTransKlap1, line 146
 	} // library marker davegut.tpLinkTransKlap1, line 147
 } // library marker davegut.tpLinkTransKlap1, line 148
 
-//	===== Comms Support ===== // library marker davegut.tpLinkTransKlap1, line 150
-def getklap1Params(cmdBody) { // library marker davegut.tpLinkTransKlap1, line 151
-	Map reqParams = [timeout: 10, headers: ["Cookie": cookie]] // library marker davegut.tpLinkTransKlap1, line 152
-	int seqNo = state.seqNo + 1 // library marker davegut.tpLinkTransKlap1, line 153
-	state.seqNo = seqNo // library marker davegut.tpLinkTransKlap1, line 154
-	byte[] encKey = new JsonSlurper().parseText(encKey) // library marker davegut.tpLinkTransKlap1, line 155
-	byte[] encIv = new JsonSlurper().parseText(encIv) // library marker davegut.tpLinkTransKlap1, line 156
-	byte[] encSig = new JsonSlurper().parseText(encSig) // library marker davegut.tpLinkTransKlap1, line 157
-	String cmdBodyJson = new groovy.json.JsonBuilder(cmdBody).toString() // library marker davegut.tpLinkTransKlap1, line 158
-
-	Map encryptedData = klap1Encrypt(cmdBodyJson.getBytes(), encKey, encIv, // library marker davegut.tpLinkTransKlap1, line 160
-									encSig, seqNo) // library marker davegut.tpLinkTransKlap1, line 161
-	reqParams << [uri: "${getDataValue("baseUrl")}/request?seq=${seqNo}", // library marker davegut.tpLinkTransKlap1, line 162
-				  ignoreSSLIssues: true, // library marker davegut.tpLinkTransKlap1, line 163
-				  body: encryptedData.cipherData, // library marker davegut.tpLinkTransKlap1, line 164
-				  contentType: "application/octet-stream", // library marker davegut.tpLinkTransKlap1, line 165
-				  requestContentType: "application/octet-stream"] // library marker davegut.tpLinkTransKlap1, line 166
-	return reqParams // library marker davegut.tpLinkTransKlap1, line 167
+def parseklap1Handshake2(resp, data) { // library marker davegut.tpLinkTransKlap1, line 150
+///////////////////////////// // library marker davegut.tpLinkTransKlap1, line 151
+//Map testData = [DATA: "methodInput", data: data, resp: resp.properties] // library marker davegut.tpLinkTransKlap1, line 152
+Map testData = [DATA: "parseHandshake2Input", data: data, resp: resp.properties] // library marker davegut.tpLinkTransKlap1, line 153
+log.trace "<b>${testData}</b>" // library marker davegut.tpLinkTransKlap1, line 154
+///////////////////////// // library marker davegut.tpLinkTransKlap1, line 155
+//	Change: move sendKlap1DataCmd call.  Changes error from logInfo to logWarn  (change Klap also) // library marker davegut.tpLinkTransKlap1, line 156
+	Map logData = [method: "parseklap1Handshake2"] // library marker davegut.tpLinkTransKlap1, line 157
+	if (resp.status == 200 && resp.data == null) { // library marker davegut.tpLinkTransKlap1, line 158
+		logData << [respStatus: "Login OK"] // library marker davegut.tpLinkTransKlap1, line 159
+		setCommsError(200) // library marker davegut.tpLinkTransKlap1, line 160
+		logDebug(logData) // library marker davegut.tpLinkTransKlap1, line 161
+		if (!device) { sendklap1DataCmd(logData, data) } // library marker davegut.tpLinkTransKlap1, line 162
+	} else { // library marker davegut.tpLinkTransKlap1, line 163
+		logData << [respStatus: "LOGIN FAILED", reason: "ERROR in HTTP response", // library marker davegut.tpLinkTransKlap1, line 164
+					resp: resp.properties] // library marker davegut.tpLinkTransKlap1, line 165
+		logWarn(logData) // library marker davegut.tpLinkTransKlap1, line 166
+	} // library marker davegut.tpLinkTransKlap1, line 167
 } // library marker davegut.tpLinkTransKlap1, line 168
 
-def parseklap1Data(resp) { // library marker davegut.tpLinkTransKlap1, line 170
-	Map parseData = [parseMethod: "parseklap1Data"] // library marker davegut.tpLinkTransKlap1, line 171
-	try { // library marker davegut.tpLinkTransKlap1, line 172
-		byte[] encKey = new JsonSlurper().parseText(encKey) // library marker davegut.tpLinkTransKlap1, line 173
-		byte[] encIv = new JsonSlurper().parseText(encIv) // library marker davegut.tpLinkTransKlap1, line 174
-		int seqNo = state.seqNo // library marker davegut.tpLinkTransKlap1, line 175
-		byte[] cipherResponse = resp.data.decodeBase64()[32..-1] // library marker davegut.tpLinkTransKlap1, line 176
-		Map cmdResp =  new JsonSlurper().parseText(klap1Decrypt(cipherResponse, encKey, // library marker davegut.tpLinkTransKlap1, line 177
-														   encIv, seqNo)) // library marker davegut.tpLinkTransKlap1, line 178
-		parseData << [cryptoStatus: "OK", cmdResp: cmdResp] // library marker davegut.tpLinkTransKlap1, line 179
-	} catch (err) { // library marker davegut.tpLinkTransKlap1, line 180
-		parseData << [cryptoStatus: "decryptDataError", error: err] // library marker davegut.tpLinkTransKlap1, line 181
-	} // library marker davegut.tpLinkTransKlap1, line 182
-	return parseData // library marker davegut.tpLinkTransKlap1, line 183
-} // library marker davegut.tpLinkTransKlap1, line 184
+//	===== Comms Support ===== // library marker davegut.tpLinkTransKlap1, line 170
+def getklap1Params(cmdBody) { // library marker davegut.tpLinkTransKlap1, line 171
+	Map reqParams = [timeout: 10, headers: ["Cookie": cookie]] // library marker davegut.tpLinkTransKlap1, line 172
+	int seqNo = state.seqNo + 1 // library marker davegut.tpLinkTransKlap1, line 173
+	state.seqNo = seqNo // library marker davegut.tpLinkTransKlap1, line 174
+	byte[] encKey = new JsonSlurper().parseText(encKey) // library marker davegut.tpLinkTransKlap1, line 175
+	byte[] encIv = new JsonSlurper().parseText(encIv) // library marker davegut.tpLinkTransKlap1, line 176
+	byte[] encSig = new JsonSlurper().parseText(encSig) // library marker davegut.tpLinkTransKlap1, line 177
+	String cmdBodyJson = new groovy.json.JsonBuilder(cmdBody).toString() // library marker davegut.tpLinkTransKlap1, line 178
 
-//	===== Crypto Methods ===== // library marker davegut.tpLinkTransKlap1, line 186
-def klap1Encrypt(byte[] request, encKey, encIv, encSig, seqNo) { // library marker davegut.tpLinkTransKlap1, line 187
-	byte[] encSeqNo = integerToByteArray(seqNo) // library marker davegut.tpLinkTransKlap1, line 188
-	byte[] ivEnc = [encIv, encSeqNo].flatten() // library marker davegut.tpLinkTransKlap1, line 189
-	def cipher = Cipher.getInstance("AES/CBC/PKCS5Padding") // library marker davegut.tpLinkTransKlap1, line 190
-	SecretKeySpec key = new SecretKeySpec(encKey, "AES") // library marker davegut.tpLinkTransKlap1, line 191
-	IvParameterSpec iv = new IvParameterSpec(ivEnc) // library marker davegut.tpLinkTransKlap1, line 192
-	cipher.init(Cipher.ENCRYPT_MODE, key, iv) // library marker davegut.tpLinkTransKlap1, line 193
-	byte[] cipherRequest = cipher.doFinal(request) // library marker davegut.tpLinkTransKlap1, line 194
+	Map encryptedData = klap1Encrypt(cmdBodyJson.getBytes(), encKey, encIv, // library marker davegut.tpLinkTransKlap1, line 180
+									encSig, seqNo) // library marker davegut.tpLinkTransKlap1, line 181
+	reqParams << [uri: "${getDataValue("baseUrl")}/request?seq=${seqNo}", // library marker davegut.tpLinkTransKlap1, line 182
+				  ignoreSSLIssues: true, // library marker davegut.tpLinkTransKlap1, line 183
+				  body: encryptedData.cipherData, // library marker davegut.tpLinkTransKlap1, line 184
+				  contentType: "application/octet-stream", // library marker davegut.tpLinkTransKlap1, line 185
+				  requestContentType: "application/octet-stream"] // library marker davegut.tpLinkTransKlap1, line 186
+	return reqParams // library marker davegut.tpLinkTransKlap1, line 187
+} // library marker davegut.tpLinkTransKlap1, line 188
 
-	byte[] payload = [encSig, encSeqNo, cipherRequest].flatten() // library marker davegut.tpLinkTransKlap1, line 196
-	byte[] signature = mdEncode("SHA-256", payload) // library marker davegut.tpLinkTransKlap1, line 197
-	cipherRequest = [signature, cipherRequest].flatten() // library marker davegut.tpLinkTransKlap1, line 198
-	return [cipherData: cipherRequest, seqNumber: seqNo] // library marker davegut.tpLinkTransKlap1, line 199
-} // library marker davegut.tpLinkTransKlap1, line 200
+def parseklap1Data(resp) { // library marker davegut.tpLinkTransKlap1, line 190
+	Map parseData = [parseMethod: "parseklap1Data"] // library marker davegut.tpLinkTransKlap1, line 191
+	try { // library marker davegut.tpLinkTransKlap1, line 192
+		byte[] encKey = new JsonSlurper().parseText(encKey) // library marker davegut.tpLinkTransKlap1, line 193
+		byte[] encIv = new JsonSlurper().parseText(encIv) // library marker davegut.tpLinkTransKlap1, line 194
+		int seqNo = state.seqNo // library marker davegut.tpLinkTransKlap1, line 195
+		byte[] cipherResponse = resp.data.decodeBase64()[32..-1] // library marker davegut.tpLinkTransKlap1, line 196
+		Map cmdResp =  new JsonSlurper().parseText(klap1Decrypt(cipherResponse, encKey, // library marker davegut.tpLinkTransKlap1, line 197
+														   encIv, seqNo)) // library marker davegut.tpLinkTransKlap1, line 198
+		parseData << [cryptoStatus: "OK", cmdResp: cmdResp] // library marker davegut.tpLinkTransKlap1, line 199
+	} catch (err) { // library marker davegut.tpLinkTransKlap1, line 200
+		parseData << [cryptoStatus: "decryptDataError", error: err] // library marker davegut.tpLinkTransKlap1, line 201
+	} // library marker davegut.tpLinkTransKlap1, line 202
+	return parseData // library marker davegut.tpLinkTransKlap1, line 203
+} // library marker davegut.tpLinkTransKlap1, line 204
 
-def klap1Decrypt(cipherResponse, encKey, encIv, seqNo) { // library marker davegut.tpLinkTransKlap1, line 202
-	byte[] encSeqNo = integerToByteArray(seqNo) // library marker davegut.tpLinkTransKlap1, line 203
-	byte[] ivEnc = [encIv, encSeqNo].flatten() // library marker davegut.tpLinkTransKlap1, line 204
-	def cipher = Cipher.getInstance("AES/CBC/PKCS5Padding") // library marker davegut.tpLinkTransKlap1, line 205
-    SecretKeySpec key = new SecretKeySpec(encKey, "AES") // library marker davegut.tpLinkTransKlap1, line 206
-	IvParameterSpec iv = new IvParameterSpec(ivEnc) // library marker davegut.tpLinkTransKlap1, line 207
-    cipher.init(Cipher.DECRYPT_MODE, key, iv) // library marker davegut.tpLinkTransKlap1, line 208
-	byte[] byteResponse = cipher.doFinal(cipherResponse) // library marker davegut.tpLinkTransKlap1, line 209
-	return new String(byteResponse, "UTF-8") // library marker davegut.tpLinkTransKlap1, line 210
-} // library marker davegut.tpLinkTransKlap1, line 211
+//	===== Crypto Methods ===== // library marker davegut.tpLinkTransKlap1, line 206
+def klap1Encrypt(byte[] request, encKey, encIv, encSig, seqNo) { // library marker davegut.tpLinkTransKlap1, line 207
+	byte[] encSeqNo = integerToByteArray(seqNo) // library marker davegut.tpLinkTransKlap1, line 208
+	byte[] ivEnc = [encIv, encSeqNo].flatten() // library marker davegut.tpLinkTransKlap1, line 209
+	def cipher = Cipher.getInstance("AES/CBC/PKCS5Padding") // library marker davegut.tpLinkTransKlap1, line 210
+	SecretKeySpec key = new SecretKeySpec(encKey, "AES") // library marker davegut.tpLinkTransKlap1, line 211
+	IvParameterSpec iv = new IvParameterSpec(ivEnc) // library marker davegut.tpLinkTransKlap1, line 212
+	cipher.init(Cipher.ENCRYPT_MODE, key, iv) // library marker davegut.tpLinkTransKlap1, line 213
+	byte[] cipherRequest = cipher.doFinal(request) // library marker davegut.tpLinkTransKlap1, line 214
 
-//	===== Misc routines that are general (apply to all) // library marker davegut.tpLinkTransKlap1, line 213
-//	Send asyncPost - generates final reqParams and sends the data // library marker davegut.tpLinkTransKlap1, line 214
-//	data is a map: [body:body, uri: uri, cookie: cookie, data: data] // library marker davegut.tpLinkTransKlap1, line 215
+	byte[] payload = [encSig, encSeqNo, cipherRequest].flatten() // library marker davegut.tpLinkTransKlap1, line 216
+	byte[] signature = mdEncode("SHA-256", payload) // library marker davegut.tpLinkTransKlap1, line 217
+	cipherRequest = [signature, cipherRequest].flatten() // library marker davegut.tpLinkTransKlap1, line 218
+	return [cipherData: cipherRequest, seqNumber: seqNo] // library marker davegut.tpLinkTransKlap1, line 219
+} // library marker davegut.tpLinkTransKlap1, line 220
 
-////////////////////////////////////////// // library marker davegut.tpLinkTransKlap1, line 217
-//	FOR TEST ONLY // library marker davegut.tpLinkTransKlap1, line 218
+def klap1Decrypt(cipherResponse, encKey, encIv, seqNo) { // library marker davegut.tpLinkTransKlap1, line 222
+	byte[] encSeqNo = integerToByteArray(seqNo) // library marker davegut.tpLinkTransKlap1, line 223
+	byte[] ivEnc = [encIv, encSeqNo].flatten() // library marker davegut.tpLinkTransKlap1, line 224
+	def cipher = Cipher.getInstance("AES/CBC/PKCS5Padding") // library marker davegut.tpLinkTransKlap1, line 225
+    SecretKeySpec key = new SecretKeySpec(encKey, "AES") // library marker davegut.tpLinkTransKlap1, line 226
+	IvParameterSpec iv = new IvParameterSpec(ivEnc) // library marker davegut.tpLinkTransKlap1, line 227
+    cipher.init(Cipher.DECRYPT_MODE, key, iv) // library marker davegut.tpLinkTransKlap1, line 228
+	byte[] byteResponse = cipher.doFinal(cipherResponse) // library marker davegut.tpLinkTransKlap1, line 229
+	return new String(byteResponse, "UTF-8") // library marker davegut.tpLinkTransKlap1, line 230
+} // library marker davegut.tpLinkTransKlap1, line 231
+
+//	===== Misc routines that are general (apply to all) // library marker davegut.tpLinkTransKlap1, line 233
+//	Send asyncPost - generates final reqParams and sends the data // library marker davegut.tpLinkTransKlap1, line 234
+//	data is a map: [body:body, uri: uri, cookie: cookie, data: data] // library marker davegut.tpLinkTransKlap1, line 235
+
+////////////////////////////////////////// // library marker davegut.tpLinkTransKlap1, line 237
+//	FOR TEST ONLY // library marker davegut.tpLinkTransKlap1, line 238
 
 
-def testKlap2() { // library marker davegut.tpLinkTransKlap1, line 221
-/* // library marker davegut.tpLinkTransKlap1, line 222
-[DATA:parseHandshakeInput,  // library marker davegut.tpLinkTransKlap1, line 223
- data:[ // library marker davegut.tpLinkTransKlap1, line 224
-	 data:[ // library marker davegut.tpLinkTransKlap1, line 225
-		 localSeed:[104, 76, 40, -76, 123, 112, 45, -17, -5, -122, 126, -29, -79, 35, 28, -61],  // library marker davegut.tpLinkTransKlap1, line 226
-		 baseUrl:"https://10.111.11.24:4433/app",  // library marker davegut.tpLinkTransKlap1, line 227
-		 devData:[ // library marker davegut.tpLinkTransKlap1, line 228
-			 method:"getDiscData", type:"SMART.TAPOROBOVAC", model:"RV30 Max Plus(US)",  // library marker davegut.tpLinkTransKlap1, line 229
-			 baseUrl:"https://10.111.11.24:4433/app", dni:"B019216F355E", devId:"90a4469dbdb9e0871261c37b99049f90",  // library marker davegut.tpLinkTransKlap1, line 230
-			 ip:"10.111.11.24", port:"4433", protocol:"KLAP1", status:"OK"]]],  // library marker davegut.tpLinkTransKlap1, line 231
- resp:[ // library marker davegut.tpLinkTransKlap1, line 232
-	 headers:[ // library marker davegut.tpLinkTransKlap1, line 233
-		 Server:"SHIP 2.0",  // library marker davegut.tpLinkTransKlap1, line 234
-		 "Set-Cookie":"TP_SESSIONID=BA24F3269B57017F7D30DA49F5A55570;TIMEOUT=86400",  // library marker davegut.tpLinkTransKlap1, line 235
-		 "Content-Length":48, "Content-Type":"text/html"],  // library marker davegut.tpLinkTransKlap1, line 236
-	 warningMessages:[],  // library marker davegut.tpLinkTransKlap1, line 237
-	 class:"class hubitat.scheduling.AsyncResponse",  // library marker davegut.tpLinkTransKlap1, line 238
-	 status:200,  // library marker davegut.tpLinkTransKlap1, line 239
-	 data:"Cze4X+EegFAarIgEHAG4X1wF+J/qJ3CkncBCVxBUo0oZ/uQSVeq5fYCNLsxu6E2m" // library marker davegut.tpLinkTransKlap1, line 240
- ]] // library marker davegut.tpLinkTransKlap1, line 241
-*/ // library marker davegut.tpLinkTransKlap1, line 242
+def testKlap2() { // library marker davegut.tpLinkTransKlap1, line 241
+/*[DATA:parseHandshake2Input,  // library marker davegut.tpLinkTransKlap1, line 242
+ data:[data:[ // library marker davegut.tpLinkTransKlap1, line 243
+	 devData:[ // library marker davegut.tpLinkTransKlap1, line 244
+		 method:getDiscData, type:SMART.TAPOROBOVAC, model:RV30 Max Plus(US), baseUrl:"https://10.111.11.24:4433/app",  // library marker davegut.tpLinkTransKlap1, line 245
+		 dni:B019216F355E, devId:90a4469dbdb9e0871261c37b99049f90, ip:10.111.11.24, port:4433, protocol:KLAP1, status:OK],  // library marker davegut.tpLinkTransKlap1, line 246
+	 baseUrl:"https://10.111.11.24:4433/app",  // library marker davegut.tpLinkTransKlap1, line 247
+	 cookie:TP_SESSIONID=18AEFF0BA8473E0E44F0482EACFED049,  // library marker davegut.tpLinkTransKlap1, line 248
+	 seqNo:-1944556694,  // library marker davegut.tpLinkTransKlap1, line 249
+	 encIv:[127, -49, 11, -115, 1, 29, 72, -111, 127, 40, 0, -122],  // library marker davegut.tpLinkTransKlap1, line 250
+	 encSig:[29, 22, 51, 109, -76, -90, 34, -123, 122, 81, 14, 15, 76, 14, 48, -40, 98, -118, -104, -21, 50, 119, 103, -38, -39, 56, -11, 6],  // library marker davegut.tpLinkTransKlap1, line 251
+	 encKey:[-124, -35, -92, 119, 39, 32, -5, -27, -82, 102, -109, -68, -63, -28, -60, 33]]],  // library marker davegut.tpLinkTransKlap1, line 252
+ resp:[ // library marker davegut.tpLinkTransKlap1, line 253
+	 headers:[Server:SHIP 2.0, Content-Length:0, Content-Type:text/html],  // library marker davegut.tpLinkTransKlap1, line 254
+	 warningMessages:[], class:class hubitat.scheduling.AsyncResponse,  // library marker davegut.tpLinkTransKlap1, line 255
+	 status:403,  // library marker davegut.tpLinkTransKlap1, line 256
+	 errorMessage:Forbidden,  // library marker davegut.tpLinkTransKlap1, line 257
+	 errorData:null]] // library marker davegut.tpLinkTransKlap1, line 258
 
-Map data = [data:[ // library marker davegut.tpLinkTransKlap1, line 244
-	localSeed:[104, 76, 40, -76, 123, 112, 45, -17, -5, -122, 126, -29, -79, 35, 28, -61],  // library marker davegut.tpLinkTransKlap1, line 245
-	baseUrl:"https://192.168.50.63:4433/app", 		//	Dev test // library marker davegut.tpLinkTransKlap1, line 246
-	devData:[ // library marker davegut.tpLinkTransKlap1, line 247
-		method:"getDiscData", type:"SMART.TAPOROBOVAC", model:"RV30 Max Plus(US)",  // library marker davegut.tpLinkTransKlap1, line 248
-		baseUrl:"https://192.168.50.63:4433/app", 		//	Dev test // library marker davegut.tpLinkTransKlap1, line 249
-		dni:"B019216F355E",  // library marker davegut.tpLinkTransKlap1, line 250
-		devId:"90a4469dbdb9e0871261c37b99049f90",  // library marker davegut.tpLinkTransKlap1, line 251
-		ip:"192.168.50.63", 		//	Dev test // library marker davegut.tpLinkTransKlap1, line 252
-		port:"4433",  // library marker davegut.tpLinkTransKlap1, line 253
-		protocol:"KLAP1", status:"OK" // library marker davegut.tpLinkTransKlap1, line 254
-	]]] // library marker davegut.tpLinkTransKlap1, line 255
+[method:parseKlap1Handshake, step:handshake2, version:A,  // library marker davegut.tpLinkTransKlap1, line 260
+ reqData:[ // library marker davegut.tpLinkTransKlap1, line 261
+	 devData:[ // library marker davegut.tpLinkTransKlap1, line 262
+		 method:getDiscData, type:SMART.TAPOROBOVAC, model:RV30 Max Plus(US), baseUrl:"https://10.111.11.24:4433/app",  // library marker davegut.tpLinkTransKlap1, line 263
+		 dni:B019216F355E, devId:90a4469dbdb9e0871261c37b99049f90, ip:10.111.11.24, port:4433, protocol:KLAP1, status:OK],  // library marker davegut.tpLinkTransKlap1, line 264
+	 baseUrl:"https://10.111.11.24:4433/app",  // library marker davegut.tpLinkTransKlap1, line 265
+	 cookie:TP_SESSIONID=18AEFF0BA8473E0E44F0482EACFED049,  // library marker davegut.tpLinkTransKlap1, line 266
+	 seqNo:-1944556694,  // library marker davegut.tpLinkTransKlap1, line 267
+	 encIv:[127, -49, 11, -115, 1, 29, 72, -111, 127, 40, 0, -122],  // library marker davegut.tpLinkTransKlap1, line 268
+	 encSig:[29, 22, 51, 109, -76, -90, 34, -123, 122, 81, 14, 15, 76, 14, 48, -40, 98, -118, -104, -21, 50, 119, 103, -38, -39, 56, -11, 6],  // library marker davegut.tpLinkTransKlap1, line 269
+	 encKey:[-124, -35, -92, 119, 39, 32, -5, -27, -82, 102, -109, -68, -63, -28, -60, 33]],  // library marker davegut.tpLinkTransKlap1, line 270
+ reqParams:[ // library marker davegut.tpLinkTransKlap1, line 271
+	 uri:"https://10.111.11.24:4433/app/handshake2",  // library marker davegut.tpLinkTransKlap1, line 272
+	 body:[-116, 35, 119, 69, -34, 81, 3, 19, -57, -93, 53, -100, -17, 106, 93, -54, 62, 55, -65, -9, -24, 96, 53, -25, -9, -38, 42, 102, -8, -52, 4, -124],  // library marker davegut.tpLinkTransKlap1, line 273
+	 headers:[Cookie:TP_SESSIONID=18AEFF0BA8473E0E44F0482EACFED049],  // library marker davegut.tpLinkTransKlap1, line 274
+	 contentType:application/octet-stream, requestContentType:application/octet-stream]] // library marker davegut.tpLinkTransKlap1, line 275
+*/ // library marker davegut.tpLinkTransKlap1, line 276
 
-Map resp = [ // library marker davegut.tpLinkTransKlap1, line 257
-	headers:[ // library marker davegut.tpLinkTransKlap1, line 258
-		Server:"SHIP 2.0",  // library marker davegut.tpLinkTransKlap1, line 259
-		"Set-Cookie":"TP_SESSIONID=BA24F3269B57017F7D30DA49F5A55570;TIMEOUT=86400",  // library marker davegut.tpLinkTransKlap1, line 260
-		"Content-Length":48,  // library marker davegut.tpLinkTransKlap1, line 261
-		"Content-Type":"text/html" // library marker davegut.tpLinkTransKlap1, line 262
-	],  // library marker davegut.tpLinkTransKlap1, line 263
-	status:200,  // library marker davegut.tpLinkTransKlap1, line 264
-	data:"Cze4X+EegFAarIgEHAG4X1wF+J/qJ3CkncBCVxBUo0oZ/uQSVeq5fYCNLsxu6E2m" // library marker davegut.tpLinkTransKlap1, line 265
-] // library marker davegut.tpLinkTransKlap1, line 266
 
-	Map logData = [method: "parseTestKlap2"] // library marker davegut.tpLinkTransKlap1, line 268
-///////////////////////////// // library marker davegut.tpLinkTransKlap1, line 269
-//Map testData = [DATA: "methodInput", data: data, resp: resp.properties] // library marker davegut.tpLinkTransKlap1, line 270
-//Map testData = [DATA: "parseHandshakeInput", data: data, resp: resp.properties] // library marker davegut.tpLinkTransKlap1, line 271
-//log.trace "<b>${testData}</b>" // library marker davegut.tpLinkTransKlap1, line 272
-///////////////////////// // library marker davegut.tpLinkTransKlap1, line 273
-	if (resp.status == 200 && resp.data != null) { // library marker davegut.tpLinkTransKlap1, line 274
-		try { // library marker davegut.tpLinkTransKlap1, line 275
-			Map reqData = [devData: data.data.devData, baseUrl: data.data.baseUrl] // library marker davegut.tpLinkTransKlap1, line 276
-			byte[] localSeed = data.data.localSeed // library marker davegut.tpLinkTransKlap1, line 277
-			byte[] seedData = resp.data.decodeBase64() // library marker davegut.tpLinkTransKlap1, line 278
+/* // library marker davegut.tpLinkTransKlap1, line 279
+[DATA:parseHandshakeInput,  // library marker davegut.tpLinkTransKlap1, line 280
+ data:[ // library marker davegut.tpLinkTransKlap1, line 281
+	 data:[ // library marker davegut.tpLinkTransKlap1, line 282
+		 localSeed:[104, 76, 40, -76, 123, 112, 45, -17, -5, -122, 126, -29, -79, 35, 28, -61],  // library marker davegut.tpLinkTransKlap1, line 283
+		 baseUrl:"https://10.111.11.24:4433/app",  // library marker davegut.tpLinkTransKlap1, line 284
+		 devData:[ // library marker davegut.tpLinkTransKlap1, line 285
+			 method:"getDiscData", type:"SMART.TAPOROBOVAC", model:"RV30 Max Plus(US)",  // library marker davegut.tpLinkTransKlap1, line 286
+			 baseUrl:"https://10.111.11.24:4433/app", dni:"B019216F355E", devId:"90a4469dbdb9e0871261c37b99049f90",  // library marker davegut.tpLinkTransKlap1, line 287
+			 ip:"10.111.11.24", port:"4433", protocol:"KLAP1", status:"OK"]]],  // library marker davegut.tpLinkTransKlap1, line 288
+ resp:[ // library marker davegut.tpLinkTransKlap1, line 289
+	 headers:[ // library marker davegut.tpLinkTransKlap1, line 290
+		 Server:"SHIP 2.0",  // library marker davegut.tpLinkTransKlap1, line 291
+		 "Set-Cookie":"TP_SESSIONID=BA24F3269B57017F7D30DA49F5A55570;TIMEOUT=86400",  // library marker davegut.tpLinkTransKlap1, line 292
+		 "Content-Length":48, "Content-Type":"text/html"],  // library marker davegut.tpLinkTransKlap1, line 293
+	 warningMessages:[],  // library marker davegut.tpLinkTransKlap1, line 294
+	 class:"class hubitat.scheduling.AsyncResponse",  // library marker davegut.tpLinkTransKlap1, line 295
+	 status:200,  // library marker davegut.tpLinkTransKlap1, line 296
+	 data:"Cze4X+EegFAarIgEHAG4X1wF+J/qJ3CkncBCVxBUo0oZ/uQSVeq5fYCNLsxu6E2m" // library marker davegut.tpLinkTransKlap1, line 297
+ ]] // library marker davegut.tpLinkTransKlap1, line 298
+*/ // library marker davegut.tpLinkTransKlap1, line 299
 
-		if (seedData.size() != 48) { // library marker davegut.tpLinkTransKlap1, line 280
-			//	Check return length.  If not 48 bytes, Abort handshake with error message // library marker davegut.tpLinkTransKlap1, line 281
-			logData << [ERROR: "invalid return from device", seedDataLen: seeData.length(), resp: resp.properties] // library marker davegut.tpLinkTransKlap1, line 282
-			logWarn(logData) // library marker davegut.tpLinkTransKlap1, line 283
-			return // library marker davegut.tpLinkTransKlap1, line 284
-		} // library marker davegut.tpLinkTransKlap1, line 285
-//u:tapo@bdomain.name, p:Fb7yPAthCKEclsg6 // library marker davegut.tpLinkTransKlap1, line 286
-			userName = "tapo@bdomain.name" // library marker davegut.tpLinkTransKlap1, line 287
-userPassword = "Fb7yPAthCKEclsg6" // library marker davegut.tpLinkTransKlap1, line 288
-			byte[] remoteSeed = seedData[0 .. 15] // library marker davegut.tpLinkTransKlap1, line 289
-			byte[] serverHash = seedData[16 .. 47] // library marker davegut.tpLinkTransKlap1, line 290
-			byte[] unHashMd = mdEncode("SHA-1", encodeUtf8(userName).getBytes()) // library marker davegut.tpLinkTransKlap1, line 291
-			byte[] pwHashMd = mdEncode("SHA-1", encodeUtf8(userPassword).getBytes()) // library marker davegut.tpLinkTransKlap1, line 292
-			byte[] unPwHashByte = [unHashMd, pwHashMd].flatten() // library marker davegut.tpLinkTransKlap1, line 293
-			byte[] unPwHashMd = mdEncode("SHA-256", unPwHashByte) // library marker davegut.tpLinkTransKlap1, line 294
-			byte[] authHash = [localSeed, remoteSeed, unPwHashMd].flatten() // library marker davegut.tpLinkTransKlap1, line 295
-			byte[] serverAuthHash = mdEncode("SHA-256", authHash) // library marker davegut.tpLinkTransKlap1, line 296
-//////////////////// // library marker davegut.tpLinkTransKlap1, line 297
-testData = [step: "handshake1", un: userName, pw: userPassword, serverAuthHash: serverAuthHash, serverHash: serverHash] // library marker davegut.tpLinkTransKlap1, line 298
-log.trace testData // library marker davegut.tpLinkTransKlap1, line 299
-/////////////////// // library marker davegut.tpLinkTransKlap1, line 300
+Map data = [data:[ // library marker davegut.tpLinkTransKlap1, line 301
+	localSeed:[104, 76, 40, -76, 123, 112, 45, -17, -5, -122, 126, -29, -79, 35, 28, -61],  // library marker davegut.tpLinkTransKlap1, line 302
+	baseUrl:"https://192.168.50.63:4433/app", 		//	Dev test // library marker davegut.tpLinkTransKlap1, line 303
+	devData:[ // library marker davegut.tpLinkTransKlap1, line 304
+		method:"getDiscData", type:"SMART.TAPOROBOVAC", model:"RV30 Max Plus(US)",  // library marker davegut.tpLinkTransKlap1, line 305
+		baseUrl:"https://192.168.50.63:4433/app", 		//	Dev test // library marker davegut.tpLinkTransKlap1, line 306
+		dni:"B019216F355E",  // library marker davegut.tpLinkTransKlap1, line 307
+		devId:"90a4469dbdb9e0871261c37b99049f90",  // library marker davegut.tpLinkTransKlap1, line 308
+		ip:"192.168.50.63", 		//	Dev test // library marker davegut.tpLinkTransKlap1, line 309
+		port:"4433",  // library marker davegut.tpLinkTransKlap1, line 310
+		protocol:"KLAP1", status:"OK" // library marker davegut.tpLinkTransKlap1, line 311
+	]]] // library marker davegut.tpLinkTransKlap1, line 312
 
-			if (serverAuthHash == serverHash) { // library marker davegut.tpLinkTransKlap1, line 302
-log.debug "<b>SUCCESS.  Handshake 1 Complete.  Start Handshake 2 testing</b>" // library marker davegut.tpLinkTransKlap1, line 303
-				def cookieHeader = resp.headers["Set-Cookie"].toString() // library marker davegut.tpLinkTransKlap1, line 304
-				def cookie = null // library marker davegut.tpLinkTransKlap1, line 305
-				if (cookieHeader != null) { // library marker davegut.tpLinkTransKlap1, line 306
-					cookie = cookieHeader.substring(cookieHeader.indexOf(":") +1, cookieHeader.indexOf(";")) // library marker davegut.tpLinkTransKlap1, line 307
-				} // library marker davegut.tpLinkTransKlap1, line 308
-				//	seqNo and encIv // library marker davegut.tpLinkTransKlap1, line 309
-				byte[] payload = ["iv".getBytes(), localSeed, remoteSeed, authHash].flatten() // library marker davegut.tpLinkTransKlap1, line 310
-				byte[] fullIv = mdEncode("SHA-256", payload) // library marker davegut.tpLinkTransKlap1, line 311
-				byte[] byteSeqNo = fullIv[-4..-1] // library marker davegut.tpLinkTransKlap1, line 312
+Map resp = [ // library marker davegut.tpLinkTransKlap1, line 314
+	headers:[ // library marker davegut.tpLinkTransKlap1, line 315
+		Server:"SHIP 2.0",  // library marker davegut.tpLinkTransKlap1, line 316
+		"Set-Cookie":"TP_SESSIONID=BA24F3269B57017F7D30DA49F5A55570;TIMEOUT=86400",  // library marker davegut.tpLinkTransKlap1, line 317
+		"Content-Length":48,  // library marker davegut.tpLinkTransKlap1, line 318
+		"Content-Type":"text/html" // library marker davegut.tpLinkTransKlap1, line 319
+	],  // library marker davegut.tpLinkTransKlap1, line 320
+	status:200,  // library marker davegut.tpLinkTransKlap1, line 321
+	data:"Cze4X+EegFAarIgEHAG4X1wF+J/qJ3CkncBCVxBUo0oZ/uQSVeq5fYCNLsxu6E2m" // library marker davegut.tpLinkTransKlap1, line 322
+] // library marker davegut.tpLinkTransKlap1, line 323
 
-				int seqNo = byteArrayToInteger(byteSeqNo) // library marker davegut.tpLinkTransKlap1, line 314
-				atomicState.seqNo = seqNo // library marker davegut.tpLinkTransKlap1, line 315
-
-				//	encKey // library marker davegut.tpLinkTransKlap1, line 317
-				payload = ["lsk".getBytes(), localSeed, remoteSeed, authHash].flatten() // library marker davegut.tpLinkTransKlap1, line 318
-				byte[] encKey = mdEncode("SHA-256", payload)[0..15] // library marker davegut.tpLinkTransKlap1, line 319
-				//	encSig // library marker davegut.tpLinkTransKlap1, line 320
-				payload = ["ldk".getBytes(), localSeed, remoteSeed, authHash].flatten() // library marker davegut.tpLinkTransKlap1, line 321
-				byte[] encSig = mdEncode("SHA-256", payload)[0..27] // library marker davegut.tpLinkTransKlap1, line 322
-				if (device) { // library marker davegut.tpLinkTransKlap1, line 323
-					device.updateSetting("cookie",[type:"password", value: cookie])  // library marker davegut.tpLinkTransKlap1, line 324
-					device.updateSetting("encKey",[type:"password", value: encKey])  // library marker davegut.tpLinkTransKlap1, line 325
-					device.updateSetting("encIv",[type:"password", value: fullIv[0..11]])  // library marker davegut.tpLinkTransKlap1, line 326
-					device.updateSetting("encSig",[type:"password", value: encSig])  // library marker davegut.tpLinkTransKlap1, line 327
-				} else { // library marker davegut.tpLinkTransKlap1, line 328
-					reqData << [cookie: cookie, seqNo: seqNo, encIv: fullIv[0..11],  // library marker davegut.tpLinkTransKlap1, line 329
-								encSig: encSig, encKey: encKey] // library marker davegut.tpLinkTransKlap1, line 330
-				} // library marker davegut.tpLinkTransKlap1, line 331
-//		Doesn't follow other hashes (localSeed and locahHash only)?				 // library marker davegut.tpLinkTransKlap1, line 332
-				byte[] loginHash = [remoteSeed, localSeed, authHash].flatten()	//	Version = A // library marker davegut.tpLinkTransKlap1, line 333
-//				byte[] loginHash = [remoteSeed, authHash].flatten()		//	Version = B // library marker davegut.tpLinkTransKlap1, line 334
-				byte[] body = mdEncode("SHA-256", loginHash) // library marker davegut.tpLinkTransKlap1, line 335
-				Map reqParams = [uri: "${data.data.baseUrl}/handshake2", // library marker davegut.tpLinkTransKlap1, line 336
-								 body: body, // library marker davegut.tpLinkTransKlap1, line 337
-								 ignoreSSLIssues: true, // library marker davegut.tpLinkTransKlap1, line 338
-								 timeout:10, // library marker davegut.tpLinkTransKlap1, line 339
-								 headers: ["Cookie": cookie], // library marker davegut.tpLinkTransKlap1, line 340
-								 contentType: "application/octet-stream", // library marker davegut.tpLinkTransKlap1, line 341
-								 requestContentType: "application/octet-stream"] // library marker davegut.tpLinkTransKlap1, line 342
-				asynchttpPost("parseklap1Handshake2", reqParams, [data: reqData]) // library marker davegut.tpLinkTransKlap1, line 343
-/////////////////////////// // library marker davegut.tpLinkTransKlap1, line 344
-logData << [step: "handshake2", version: "A", reqData: reqData, reqParams: reqParams] // library marker davegut.tpLinkTransKlap1, line 345
-logTrace "<b>${logData}</b>" // library marker davegut.tpLinkTransKlap1, line 346
-///////////////////////// // library marker davegut.tpLinkTransKlap1, line 347
-			} else { // library marker davegut.tpLinkTransKlap1, line 348
-				logData << [respStatus: "ERROR: localAuthHash != serverHash", // library marker davegut.tpLinkTransKlap1, line 349
-							action: "<b>Check credentials and try again</b>"] // library marker davegut.tpLinkTransKlap1, line 350
-				logWarn(logData) // library marker davegut.tpLinkTransKlap1, line 351
-			} // library marker davegut.tpLinkTransKlap1, line 352
-		} catch (err) { // library marker davegut.tpLinkTransKlap1, line 353
-			logData << [respStatus: "ERROR parsing 200 response", resp: resp.properties, error: err] // library marker davegut.tpLinkTransKlap1, line 354
-			logData << [action: "<b>Try Configure command</b>"] // library marker davegut.tpLinkTransKlap1, line 355
-			logWarn(logData) // library marker davegut.tpLinkTransKlap1, line 356
-		} // library marker davegut.tpLinkTransKlap1, line 357
-	} else { // library marker davegut.tpLinkTransKlap1, line 358
-		logData << [respStatus: resp.status, message: resp.errorMessage] // library marker davegut.tpLinkTransKlap1, line 359
-		logData << [action: "<b>Try Configure command</b>"] // library marker davegut.tpLinkTransKlap1, line 360
-		logWarn(logData) // library marker davegut.tpLinkTransKlap1, line 361
-	} // library marker davegut.tpLinkTransKlap1, line 362
-} // library marker davegut.tpLinkTransKlap1, line 363
-///////////////////////////////	 // library marker davegut.tpLinkTransKlap1, line 364
-byte[] genServerHashKlap1(un, pw, localSeed, remoteSeed) { // library marker davegut.tpLinkTransKlap1, line 365
-	byte[] unHashMd = mdEncode("MD5", encodeUtf8(un).getBytes()) // library marker davegut.tpLinkTransKlap1, line 366
-	byte[] pwHashMd = mdEncode("MD5", encodeUtf8(pw).getBytes()) // library marker davegut.tpLinkTransKlap1, line 367
-	byte[] unPwHashByte = [unHashMd, pwHashMd].flatten() // library marker davegut.tpLinkTransKlap1, line 368
-	byte[] unPwHashMd = mdEncode("MD5", unPwHashByte) // library marker davegut.tpLinkTransKlap1, line 369
-	byte[] authHashByte = [localSeed, remoteSeed, unPwHashMd].flatten() // library marker davegut.tpLinkTransKlap1, line 370
-	return mdEncode("SHA-256", authHashByte) // library marker davegut.tpLinkTransKlap1, line 371
-} // library marker davegut.tpLinkTransKlap1, line 372
-byte[] genServerHashKlap2(un, pw, localSeed, remoteSeed) { // library marker davegut.tpLinkTransKlap1, line 373
-	byte[] unHashMd = mdEncode("SHA-1", encodeUtf8(un).getBytes()) // library marker davegut.tpLinkTransKlap1, line 374
-	byte[] pwHashMd = mdEncode("SHA-1", encodeUtf8(pw).getBytes()) // library marker davegut.tpLinkTransKlap1, line 375
-	byte[] unPwHashByte = [unHashMd, pwHashMd].flatten() // library marker davegut.tpLinkTransKlap1, line 376
-	byte[] unPwHashMd = mdEncode("SHA-256", unPwHashByte) // library marker davegut.tpLinkTransKlap1, line 377
-	byte[] authHashByte = [localSeed, remoteSeed, unPwHashMd].flatten() // library marker davegut.tpLinkTransKlap1, line 378
-	return mdEncode("SHA-256", authHashByte) // library marker davegut.tpLinkTransKlap1, line 379
-} // library marker davegut.tpLinkTransKlap1, line 380
+} // library marker davegut.tpLinkTransKlap1, line 325
+///////////////////////////////	 // library marker davegut.tpLinkTransKlap1, line 326
+byte[] genServerHashKlap1(un, pw, localSeed, remoteSeed) { // library marker davegut.tpLinkTransKlap1, line 327
+	byte[] unHashMd = mdEncode("MD5", encodeUtf8(un).getBytes()) // library marker davegut.tpLinkTransKlap1, line 328
+	byte[] pwHashMd = mdEncode("MD5", encodeUtf8(pw).getBytes()) // library marker davegut.tpLinkTransKlap1, line 329
+	byte[] unPwHashByte = [unHashMd, pwHashMd].flatten() // library marker davegut.tpLinkTransKlap1, line 330
+	byte[] unPwHashMd = mdEncode("MD5", unPwHashByte) // library marker davegut.tpLinkTransKlap1, line 331
+	byte[] authHashByte = [localSeed, remoteSeed, unPwHashMd].flatten() // library marker davegut.tpLinkTransKlap1, line 332
+	return mdEncode("SHA-256", authHashByte) // library marker davegut.tpLinkTransKlap1, line 333
+} // library marker davegut.tpLinkTransKlap1, line 334
+byte[] genServerHashKlap2(un, pw, localSeed, remoteSeed) { // library marker davegut.tpLinkTransKlap1, line 335
+	byte[] unHashMd = mdEncode("SHA-1", encodeUtf8(un).getBytes()) // library marker davegut.tpLinkTransKlap1, line 336
+	byte[] pwHashMd = mdEncode("SHA-1", encodeUtf8(pw).getBytes()) // library marker davegut.tpLinkTransKlap1, line 337
+	byte[] unPwHashByte = [unHashMd, pwHashMd].flatten() // library marker davegut.tpLinkTransKlap1, line 338
+	byte[] unPwHashMd = mdEncode("SHA-256", unPwHashByte) // library marker davegut.tpLinkTransKlap1, line 339
+	byte[] authHashByte = [localSeed, remoteSeed, unPwHashMd].flatten() // library marker davegut.tpLinkTransKlap1, line 340
+	return mdEncode("SHA-256", authHashByte) // library marker davegut.tpLinkTransKlap1, line 341
+} // library marker davegut.tpLinkTransKlap1, line 342
 
 // ~~~~~ end include (263) davegut.tpLinkTransKlap1 ~~~~~
 
@@ -1744,184 +1706,185 @@ def parseKlapHandshake(resp, data) { // library marker davegut.tpLinkCrypto, lin
 				Map reqParams = [uri: "${data.data.baseUrl}/handshake2", // library marker davegut.tpLinkCrypto, line 183
 								 body: body, // library marker davegut.tpLinkCrypto, line 184
 								 timeout:10, // library marker davegut.tpLinkCrypto, line 185
-								 headers: ["Cookie": cookie], // library marker davegut.tpLinkCrypto, line 186
-								 contentType: "application/octet-stream", // library marker davegut.tpLinkCrypto, line 187
-								 requestContentType: "application/octet-stream"] // library marker davegut.tpLinkCrypto, line 188
-				asynchttpPost("parseKlapHandshake2", reqParams, [data: reqData]) // library marker davegut.tpLinkCrypto, line 189
-			} else { // library marker davegut.tpLinkCrypto, line 190
-				logData << [respStatus: "ERROR: localAuthHash != serverHash", // library marker davegut.tpLinkCrypto, line 191
-							action: "<b>Check credentials and try again</b>"] // library marker davegut.tpLinkCrypto, line 192
-				logWarn(logData) // library marker davegut.tpLinkCrypto, line 193
-			} // library marker davegut.tpLinkCrypto, line 194
-		} catch (err) { // library marker davegut.tpLinkCrypto, line 195
-			logData << [respStatus: "ERROR parsing 200 response", resp: resp.properties, error: err] // library marker davegut.tpLinkCrypto, line 196
-			logData << [action: "<b>Try Configure command</b>"] // library marker davegut.tpLinkCrypto, line 197
-			logWarn(logData) // library marker davegut.tpLinkCrypto, line 198
-		} // library marker davegut.tpLinkCrypto, line 199
-	} else { // library marker davegut.tpLinkCrypto, line 200
-		logData << [respStatus: resp.status, message: resp.errorMessage] // library marker davegut.tpLinkCrypto, line 201
-		logData << [action: "<b>Try Configure command</b>"] // library marker davegut.tpLinkCrypto, line 202
-		logWarn(logData) // library marker davegut.tpLinkCrypto, line 203
-	} // library marker davegut.tpLinkCrypto, line 204
-} // library marker davegut.tpLinkCrypto, line 205
+								 ignoreSSLIssues: true, // library marker davegut.tpLinkCrypto, line 186
+								 headers: ["Cookie": cookie], // library marker davegut.tpLinkCrypto, line 187
+								 contentType: "application/octet-stream", // library marker davegut.tpLinkCrypto, line 188
+								 requestContentType: "application/octet-stream"] // library marker davegut.tpLinkCrypto, line 189
+				asynchttpPost("parseKlapHandshake2", reqParams, [data: reqData]) // library marker davegut.tpLinkCrypto, line 190
+			} else { // library marker davegut.tpLinkCrypto, line 191
+				logData << [respStatus: "ERROR: localAuthHash != serverHash", // library marker davegut.tpLinkCrypto, line 192
+							action: "<b>Check credentials and try again</b>"] // library marker davegut.tpLinkCrypto, line 193
+				logWarn(logData) // library marker davegut.tpLinkCrypto, line 194
+			} // library marker davegut.tpLinkCrypto, line 195
+		} catch (err) { // library marker davegut.tpLinkCrypto, line 196
+			logData << [respStatus: "ERROR parsing 200 response", resp: resp.properties, error: err] // library marker davegut.tpLinkCrypto, line 197
+			logData << [action: "<b>Try Configure command</b>"] // library marker davegut.tpLinkCrypto, line 198
+			logWarn(logData) // library marker davegut.tpLinkCrypto, line 199
+		} // library marker davegut.tpLinkCrypto, line 200
+	} else { // library marker davegut.tpLinkCrypto, line 201
+		logData << [respStatus: resp.status, message: resp.errorMessage] // library marker davegut.tpLinkCrypto, line 202
+		logData << [action: "<b>Try Configure command</b>"] // library marker davegut.tpLinkCrypto, line 203
+		logWarn(logData) // library marker davegut.tpLinkCrypto, line 204
+	} // library marker davegut.tpLinkCrypto, line 205
+} // library marker davegut.tpLinkCrypto, line 206
 
-def parseKlapHandshake2(resp, data) { // library marker davegut.tpLinkCrypto, line 207
-	Map logData = [method: "parseKlapHandshake2"] // library marker davegut.tpLinkCrypto, line 208
-	if (resp.status == 200 && resp.data == null) { // library marker davegut.tpLinkCrypto, line 209
-		logData << [respStatus: "Login OK"] // library marker davegut.tpLinkCrypto, line 210
-		setCommsError(200) // library marker davegut.tpLinkCrypto, line 211
-		logDebug(logData) // library marker davegut.tpLinkCrypto, line 212
-	} else { // library marker davegut.tpLinkCrypto, line 213
-		logData << [respStatus: "LOGIN FAILED", reason: "ERROR in HTTP response", // library marker davegut.tpLinkCrypto, line 214
-					resp: resp.properties] // library marker davegut.tpLinkCrypto, line 215
-		logInfo(logData) // library marker davegut.tpLinkCrypto, line 216
-	} // library marker davegut.tpLinkCrypto, line 217
-	if (!device) { sendKlapDataCmd(logData, data) } // library marker davegut.tpLinkCrypto, line 218
-} // library marker davegut.tpLinkCrypto, line 219
+def parseKlapHandshake2(resp, data) { // library marker davegut.tpLinkCrypto, line 208
+	Map logData = [method: "parseKlapHandshake2"] // library marker davegut.tpLinkCrypto, line 209
+	if (resp.status == 200 && resp.data == null) { // library marker davegut.tpLinkCrypto, line 210
+		logData << [respStatus: "Login OK"] // library marker davegut.tpLinkCrypto, line 211
+		setCommsError(200) // library marker davegut.tpLinkCrypto, line 212
+		logDebug(logData) // library marker davegut.tpLinkCrypto, line 213
+	} else { // library marker davegut.tpLinkCrypto, line 214
+		logData << [respStatus: "LOGIN FAILED", reason: "ERROR in HTTP response", // library marker davegut.tpLinkCrypto, line 215
+					resp: resp.properties] // library marker davegut.tpLinkCrypto, line 216
+		logInfo(logData) // library marker davegut.tpLinkCrypto, line 217
+	} // library marker davegut.tpLinkCrypto, line 218
+	if (!device) { sendKlapDataCmd(logData, data) } // library marker davegut.tpLinkCrypto, line 219
+} // library marker davegut.tpLinkCrypto, line 220
 
-//	===== Comms Support ===== // library marker davegut.tpLinkCrypto, line 221
-def getKlapParams(cmdBody) { // library marker davegut.tpLinkCrypto, line 222
-	Map reqParams = [timeout: 10, headers: ["Cookie": cookie]] // library marker davegut.tpLinkCrypto, line 223
-	int seqNo = state.seqNo + 1 // library marker davegut.tpLinkCrypto, line 224
-	state.seqNo = seqNo // library marker davegut.tpLinkCrypto, line 225
-	byte[] encKey = new JsonSlurper().parseText(encKey) // library marker davegut.tpLinkCrypto, line 226
-	byte[] encIv = new JsonSlurper().parseText(encIv) // library marker davegut.tpLinkCrypto, line 227
-	byte[] encSig = new JsonSlurper().parseText(encSig) // library marker davegut.tpLinkCrypto, line 228
-	String cmdBodyJson = new groovy.json.JsonBuilder(cmdBody).toString() // library marker davegut.tpLinkCrypto, line 229
+//	===== Comms Support ===== // library marker davegut.tpLinkCrypto, line 222
+def getKlapParams(cmdBody) { // library marker davegut.tpLinkCrypto, line 223
+	Map reqParams = [timeout: 10, headers: ["Cookie": cookie]] // library marker davegut.tpLinkCrypto, line 224
+	int seqNo = state.seqNo + 1 // library marker davegut.tpLinkCrypto, line 225
+	state.seqNo = seqNo // library marker davegut.tpLinkCrypto, line 226
+	byte[] encKey = new JsonSlurper().parseText(encKey) // library marker davegut.tpLinkCrypto, line 227
+	byte[] encIv = new JsonSlurper().parseText(encIv) // library marker davegut.tpLinkCrypto, line 228
+	byte[] encSig = new JsonSlurper().parseText(encSig) // library marker davegut.tpLinkCrypto, line 229
+	String cmdBodyJson = new groovy.json.JsonBuilder(cmdBody).toString() // library marker davegut.tpLinkCrypto, line 230
 
-	Map encryptedData = klapEncrypt(cmdBodyJson.getBytes(), encKey, encIv, // library marker davegut.tpLinkCrypto, line 231
-									encSig, seqNo) // library marker davegut.tpLinkCrypto, line 232
-	reqParams << [uri: "${getDataValue("baseUrl")}/request?seq=${seqNo}", // library marker davegut.tpLinkCrypto, line 233
-				  body: encryptedData.cipherData, // library marker davegut.tpLinkCrypto, line 234
-				  contentType: "application/octet-stream", // library marker davegut.tpLinkCrypto, line 235
-				  requestContentType: "application/octet-stream"] // library marker davegut.tpLinkCrypto, line 236
-	return reqParams // library marker davegut.tpLinkCrypto, line 237
-} // library marker davegut.tpLinkCrypto, line 238
+	Map encryptedData = klapEncrypt(cmdBodyJson.getBytes(), encKey, encIv, // library marker davegut.tpLinkCrypto, line 232
+									encSig, seqNo) // library marker davegut.tpLinkCrypto, line 233
+	reqParams << [uri: "${getDataValue("baseUrl")}/request?seq=${seqNo}", // library marker davegut.tpLinkCrypto, line 234
+				  body: encryptedData.cipherData, // library marker davegut.tpLinkCrypto, line 235
+				  contentType: "application/octet-stream", // library marker davegut.tpLinkCrypto, line 236
+				  requestContentType: "application/octet-stream"] // library marker davegut.tpLinkCrypto, line 237
+	return reqParams // library marker davegut.tpLinkCrypto, line 238
+} // library marker davegut.tpLinkCrypto, line 239
 
-def getAesParams(cmdBody) { // library marker davegut.tpLinkCrypto, line 240
-	byte[] encKey = new JsonSlurper().parseText(encKey) // library marker davegut.tpLinkCrypto, line 241
-	byte[] encIv = new JsonSlurper().parseText(encIv) // library marker davegut.tpLinkCrypto, line 242
-	def cmdStr = JsonOutput.toJson(cmdBody).toString() // library marker davegut.tpLinkCrypto, line 243
-	Map reqBody = [method: "securePassthrough", // library marker davegut.tpLinkCrypto, line 244
-				   params: [request: aesEncrypt(cmdStr, encKey, encIv)]] // library marker davegut.tpLinkCrypto, line 245
-	Map reqParams = [uri: "${getDataValue("baseUrl")}?token=${token}", // library marker davegut.tpLinkCrypto, line 246
-					 body: new groovy.json.JsonBuilder(reqBody).toString(), // library marker davegut.tpLinkCrypto, line 247
-					 contentType: "application/json", // library marker davegut.tpLinkCrypto, line 248
-					 requestContentType: "application/json", // library marker davegut.tpLinkCrypto, line 249
-					 timeout: 10, // library marker davegut.tpLinkCrypto, line 250
-					 headers: ["Cookie": cookie]] // library marker davegut.tpLinkCrypto, line 251
-	return reqParams // library marker davegut.tpLinkCrypto, line 252
-} // library marker davegut.tpLinkCrypto, line 253
+def getAesParams(cmdBody) { // library marker davegut.tpLinkCrypto, line 241
+	byte[] encKey = new JsonSlurper().parseText(encKey) // library marker davegut.tpLinkCrypto, line 242
+	byte[] encIv = new JsonSlurper().parseText(encIv) // library marker davegut.tpLinkCrypto, line 243
+	def cmdStr = JsonOutput.toJson(cmdBody).toString() // library marker davegut.tpLinkCrypto, line 244
+	Map reqBody = [method: "securePassthrough", // library marker davegut.tpLinkCrypto, line 245
+				   params: [request: aesEncrypt(cmdStr, encKey, encIv)]] // library marker davegut.tpLinkCrypto, line 246
+	Map reqParams = [uri: "${getDataValue("baseUrl")}?token=${token}", // library marker davegut.tpLinkCrypto, line 247
+					 body: new groovy.json.JsonBuilder(reqBody).toString(), // library marker davegut.tpLinkCrypto, line 248
+					 contentType: "application/json", // library marker davegut.tpLinkCrypto, line 249
+					 requestContentType: "application/json", // library marker davegut.tpLinkCrypto, line 250
+					 timeout: 10, // library marker davegut.tpLinkCrypto, line 251
+					 headers: ["Cookie": cookie]] // library marker davegut.tpLinkCrypto, line 252
+	return reqParams // library marker davegut.tpLinkCrypto, line 253
+} // library marker davegut.tpLinkCrypto, line 254
 
-def parseKlapData(resp) { // library marker davegut.tpLinkCrypto, line 255
-	Map parseData = [parseMethod: "parseKlapData"] // library marker davegut.tpLinkCrypto, line 256
-	try { // library marker davegut.tpLinkCrypto, line 257
-		byte[] encKey = new JsonSlurper().parseText(encKey) // library marker davegut.tpLinkCrypto, line 258
-		byte[] encIv = new JsonSlurper().parseText(encIv) // library marker davegut.tpLinkCrypto, line 259
-		int seqNo = state.seqNo // library marker davegut.tpLinkCrypto, line 260
-		byte[] cipherResponse = resp.data.decodeBase64()[32..-1] // library marker davegut.tpLinkCrypto, line 261
-		Map cmdResp =  new JsonSlurper().parseText(klapDecrypt(cipherResponse, encKey, // library marker davegut.tpLinkCrypto, line 262
-														   encIv, seqNo)) // library marker davegut.tpLinkCrypto, line 263
-		parseData << [cryptoStatus: "OK", cmdResp: cmdResp] // library marker davegut.tpLinkCrypto, line 264
-	} catch (err) { // library marker davegut.tpLinkCrypto, line 265
-		parseData << [cryptoStatus: "decryptDataError", error: err] // library marker davegut.tpLinkCrypto, line 266
-	} // library marker davegut.tpLinkCrypto, line 267
-	return parseData // library marker davegut.tpLinkCrypto, line 268
-} // library marker davegut.tpLinkCrypto, line 269
+def parseKlapData(resp) { // library marker davegut.tpLinkCrypto, line 256
+	Map parseData = [parseMethod: "parseKlapData"] // library marker davegut.tpLinkCrypto, line 257
+	try { // library marker davegut.tpLinkCrypto, line 258
+		byte[] encKey = new JsonSlurper().parseText(encKey) // library marker davegut.tpLinkCrypto, line 259
+		byte[] encIv = new JsonSlurper().parseText(encIv) // library marker davegut.tpLinkCrypto, line 260
+		int seqNo = state.seqNo // library marker davegut.tpLinkCrypto, line 261
+		byte[] cipherResponse = resp.data.decodeBase64()[32..-1] // library marker davegut.tpLinkCrypto, line 262
+		Map cmdResp =  new JsonSlurper().parseText(klapDecrypt(cipherResponse, encKey, // library marker davegut.tpLinkCrypto, line 263
+														   encIv, seqNo)) // library marker davegut.tpLinkCrypto, line 264
+		parseData << [cryptoStatus: "OK", cmdResp: cmdResp] // library marker davegut.tpLinkCrypto, line 265
+	} catch (err) { // library marker davegut.tpLinkCrypto, line 266
+		parseData << [cryptoStatus: "decryptDataError", error: err] // library marker davegut.tpLinkCrypto, line 267
+	} // library marker davegut.tpLinkCrypto, line 268
+	return parseData // library marker davegut.tpLinkCrypto, line 269
+} // library marker davegut.tpLinkCrypto, line 270
 
-def parseAesData(resp) { // library marker davegut.tpLinkCrypto, line 271
-	Map parseData = [parseMethod: "parseAesData"] // library marker davegut.tpLinkCrypto, line 272
-	try { // library marker davegut.tpLinkCrypto, line 273
-		byte[] encKey = new JsonSlurper().parseText(encKey) // library marker davegut.tpLinkCrypto, line 274
-		byte[] encIv = new JsonSlurper().parseText(encIv) // library marker davegut.tpLinkCrypto, line 275
-		Map cmdResp = new JsonSlurper().parseText(aesDecrypt(resp.json.result.response, // library marker davegut.tpLinkCrypto, line 276
-														 encKey, encIv)) // library marker davegut.tpLinkCrypto, line 277
-		parseData << [cryptoStatus: "OK", cmdResp: cmdResp] // library marker davegut.tpLinkCrypto, line 278
-	} catch (err) { // library marker davegut.tpLinkCrypto, line 279
-		parseData << [cryptoStatus: "decryptDataError", error: err, dataLength: resp.data.length()] // library marker davegut.tpLinkCrypto, line 280
-	} // library marker davegut.tpLinkCrypto, line 281
-	return parseData // library marker davegut.tpLinkCrypto, line 282
-} // library marker davegut.tpLinkCrypto, line 283
+def parseAesData(resp) { // library marker davegut.tpLinkCrypto, line 272
+	Map parseData = [parseMethod: "parseAesData"] // library marker davegut.tpLinkCrypto, line 273
+	try { // library marker davegut.tpLinkCrypto, line 274
+		byte[] encKey = new JsonSlurper().parseText(encKey) // library marker davegut.tpLinkCrypto, line 275
+		byte[] encIv = new JsonSlurper().parseText(encIv) // library marker davegut.tpLinkCrypto, line 276
+		Map cmdResp = new JsonSlurper().parseText(aesDecrypt(resp.json.result.response, // library marker davegut.tpLinkCrypto, line 277
+														 encKey, encIv)) // library marker davegut.tpLinkCrypto, line 278
+		parseData << [cryptoStatus: "OK", cmdResp: cmdResp] // library marker davegut.tpLinkCrypto, line 279
+	} catch (err) { // library marker davegut.tpLinkCrypto, line 280
+		parseData << [cryptoStatus: "decryptDataError", error: err, dataLength: resp.data.length()] // library marker davegut.tpLinkCrypto, line 281
+	} // library marker davegut.tpLinkCrypto, line 282
+	return parseData // library marker davegut.tpLinkCrypto, line 283
+} // library marker davegut.tpLinkCrypto, line 284
 
-//	===== Crypto Methods ===== // library marker davegut.tpLinkCrypto, line 285
-def klapEncrypt(byte[] request, encKey, encIv, encSig, seqNo) { // library marker davegut.tpLinkCrypto, line 286
-	byte[] encSeqNo = integerToByteArray(seqNo) // library marker davegut.tpLinkCrypto, line 287
-	byte[] ivEnc = [encIv, encSeqNo].flatten() // library marker davegut.tpLinkCrypto, line 288
-	def cipher = Cipher.getInstance("AES/CBC/PKCS5Padding") // library marker davegut.tpLinkCrypto, line 289
-	SecretKeySpec key = new SecretKeySpec(encKey, "AES") // library marker davegut.tpLinkCrypto, line 290
-	IvParameterSpec iv = new IvParameterSpec(ivEnc) // library marker davegut.tpLinkCrypto, line 291
-	cipher.init(Cipher.ENCRYPT_MODE, key, iv) // library marker davegut.tpLinkCrypto, line 292
-	byte[] cipherRequest = cipher.doFinal(request) // library marker davegut.tpLinkCrypto, line 293
+//	===== Crypto Methods ===== // library marker davegut.tpLinkCrypto, line 286
+def klapEncrypt(byte[] request, encKey, encIv, encSig, seqNo) { // library marker davegut.tpLinkCrypto, line 287
+	byte[] encSeqNo = integerToByteArray(seqNo) // library marker davegut.tpLinkCrypto, line 288
+	byte[] ivEnc = [encIv, encSeqNo].flatten() // library marker davegut.tpLinkCrypto, line 289
+	def cipher = Cipher.getInstance("AES/CBC/PKCS5Padding") // library marker davegut.tpLinkCrypto, line 290
+	SecretKeySpec key = new SecretKeySpec(encKey, "AES") // library marker davegut.tpLinkCrypto, line 291
+	IvParameterSpec iv = new IvParameterSpec(ivEnc) // library marker davegut.tpLinkCrypto, line 292
+	cipher.init(Cipher.ENCRYPT_MODE, key, iv) // library marker davegut.tpLinkCrypto, line 293
+	byte[] cipherRequest = cipher.doFinal(request) // library marker davegut.tpLinkCrypto, line 294
 
-	byte[] payload = [encSig, encSeqNo, cipherRequest].flatten() // library marker davegut.tpLinkCrypto, line 295
-	byte[] signature = mdEncode("SHA-256", payload) // library marker davegut.tpLinkCrypto, line 296
-	cipherRequest = [signature, cipherRequest].flatten() // library marker davegut.tpLinkCrypto, line 297
-	return [cipherData: cipherRequest, seqNumber: seqNo] // library marker davegut.tpLinkCrypto, line 298
-} // library marker davegut.tpLinkCrypto, line 299
+	byte[] payload = [encSig, encSeqNo, cipherRequest].flatten() // library marker davegut.tpLinkCrypto, line 296
+	byte[] signature = mdEncode("SHA-256", payload) // library marker davegut.tpLinkCrypto, line 297
+	cipherRequest = [signature, cipherRequest].flatten() // library marker davegut.tpLinkCrypto, line 298
+	return [cipherData: cipherRequest, seqNumber: seqNo] // library marker davegut.tpLinkCrypto, line 299
+} // library marker davegut.tpLinkCrypto, line 300
 
-def klapDecrypt(cipherResponse, encKey, encIv, seqNo) { // library marker davegut.tpLinkCrypto, line 301
-	byte[] encSeqNo = integerToByteArray(seqNo) // library marker davegut.tpLinkCrypto, line 302
-	byte[] ivEnc = [encIv, encSeqNo].flatten() // library marker davegut.tpLinkCrypto, line 303
-	def cipher = Cipher.getInstance("AES/CBC/PKCS5Padding") // library marker davegut.tpLinkCrypto, line 304
-    SecretKeySpec key = new SecretKeySpec(encKey, "AES") // library marker davegut.tpLinkCrypto, line 305
-	IvParameterSpec iv = new IvParameterSpec(ivEnc) // library marker davegut.tpLinkCrypto, line 306
-    cipher.init(Cipher.DECRYPT_MODE, key, iv) // library marker davegut.tpLinkCrypto, line 307
-	byte[] byteResponse = cipher.doFinal(cipherResponse) // library marker davegut.tpLinkCrypto, line 308
-	return new String(byteResponse, "UTF-8") // library marker davegut.tpLinkCrypto, line 309
-} // library marker davegut.tpLinkCrypto, line 310
+def klapDecrypt(cipherResponse, encKey, encIv, seqNo) { // library marker davegut.tpLinkCrypto, line 302
+	byte[] encSeqNo = integerToByteArray(seqNo) // library marker davegut.tpLinkCrypto, line 303
+	byte[] ivEnc = [encIv, encSeqNo].flatten() // library marker davegut.tpLinkCrypto, line 304
+	def cipher = Cipher.getInstance("AES/CBC/PKCS5Padding") // library marker davegut.tpLinkCrypto, line 305
+    SecretKeySpec key = new SecretKeySpec(encKey, "AES") // library marker davegut.tpLinkCrypto, line 306
+	IvParameterSpec iv = new IvParameterSpec(ivEnc) // library marker davegut.tpLinkCrypto, line 307
+    cipher.init(Cipher.DECRYPT_MODE, key, iv) // library marker davegut.tpLinkCrypto, line 308
+	byte[] byteResponse = cipher.doFinal(cipherResponse) // library marker davegut.tpLinkCrypto, line 309
+	return new String(byteResponse, "UTF-8") // library marker davegut.tpLinkCrypto, line 310
+} // library marker davegut.tpLinkCrypto, line 311
 
-def aesEncrypt(request, encKey, encIv) { // library marker davegut.tpLinkCrypto, line 312
-	def cipher = Cipher.getInstance("AES/CBC/PKCS5Padding") // library marker davegut.tpLinkCrypto, line 313
-	SecretKeySpec key = new SecretKeySpec(encKey, "AES") // library marker davegut.tpLinkCrypto, line 314
-	IvParameterSpec iv = new IvParameterSpec(encIv) // library marker davegut.tpLinkCrypto, line 315
-	cipher.init(Cipher.ENCRYPT_MODE, key, iv) // library marker davegut.tpLinkCrypto, line 316
-	String result = cipher.doFinal(request.getBytes("UTF-8")).encodeBase64().toString() // library marker davegut.tpLinkCrypto, line 317
-	return result.replace("\r\n","") // library marker davegut.tpLinkCrypto, line 318
-} // library marker davegut.tpLinkCrypto, line 319
+def aesEncrypt(request, encKey, encIv) { // library marker davegut.tpLinkCrypto, line 313
+	def cipher = Cipher.getInstance("AES/CBC/PKCS5Padding") // library marker davegut.tpLinkCrypto, line 314
+	SecretKeySpec key = new SecretKeySpec(encKey, "AES") // library marker davegut.tpLinkCrypto, line 315
+	IvParameterSpec iv = new IvParameterSpec(encIv) // library marker davegut.tpLinkCrypto, line 316
+	cipher.init(Cipher.ENCRYPT_MODE, key, iv) // library marker davegut.tpLinkCrypto, line 317
+	String result = cipher.doFinal(request.getBytes("UTF-8")).encodeBase64().toString() // library marker davegut.tpLinkCrypto, line 318
+	return result.replace("\r\n","") // library marker davegut.tpLinkCrypto, line 319
+} // library marker davegut.tpLinkCrypto, line 320
 
-def aesDecrypt(cipherResponse, encKey, encIv) { // library marker davegut.tpLinkCrypto, line 321
-    byte[] decodedBytes = cipherResponse.decodeBase64() // library marker davegut.tpLinkCrypto, line 322
-	def cipher = Cipher.getInstance("AES/CBC/PKCS5Padding") // library marker davegut.tpLinkCrypto, line 323
-    SecretKeySpec key = new SecretKeySpec(encKey, "AES") // library marker davegut.tpLinkCrypto, line 324
-	IvParameterSpec iv = new IvParameterSpec(encIv) // library marker davegut.tpLinkCrypto, line 325
-    cipher.init(Cipher.DECRYPT_MODE, key, iv) // library marker davegut.tpLinkCrypto, line 326
-	return new String(cipher.doFinal(decodedBytes), "UTF-8") // library marker davegut.tpLinkCrypto, line 327
-} // library marker davegut.tpLinkCrypto, line 328
+def aesDecrypt(cipherResponse, encKey, encIv) { // library marker davegut.tpLinkCrypto, line 322
+    byte[] decodedBytes = cipherResponse.decodeBase64() // library marker davegut.tpLinkCrypto, line 323
+	def cipher = Cipher.getInstance("AES/CBC/PKCS5Padding") // library marker davegut.tpLinkCrypto, line 324
+    SecretKeySpec key = new SecretKeySpec(encKey, "AES") // library marker davegut.tpLinkCrypto, line 325
+	IvParameterSpec iv = new IvParameterSpec(encIv) // library marker davegut.tpLinkCrypto, line 326
+    cipher.init(Cipher.DECRYPT_MODE, key, iv) // library marker davegut.tpLinkCrypto, line 327
+	return new String(cipher.doFinal(decodedBytes), "UTF-8") // library marker davegut.tpLinkCrypto, line 328
+} // library marker davegut.tpLinkCrypto, line 329
 
-//	===== Encoding Methods ===== // library marker davegut.tpLinkCrypto, line 330
-def mdEncode(hashMethod, byte[] data) { // library marker davegut.tpLinkCrypto, line 331
-	MessageDigest md = MessageDigest.getInstance(hashMethod) // library marker davegut.tpLinkCrypto, line 332
-	md.update(data) // library marker davegut.tpLinkCrypto, line 333
-	return md.digest() // library marker davegut.tpLinkCrypto, line 334
-} // library marker davegut.tpLinkCrypto, line 335
+//	===== Encoding Methods ===== // library marker davegut.tpLinkCrypto, line 331
+def mdEncode(hashMethod, byte[] data) { // library marker davegut.tpLinkCrypto, line 332
+	MessageDigest md = MessageDigest.getInstance(hashMethod) // library marker davegut.tpLinkCrypto, line 333
+	md.update(data) // library marker davegut.tpLinkCrypto, line 334
+	return md.digest() // library marker davegut.tpLinkCrypto, line 335
+} // library marker davegut.tpLinkCrypto, line 336
 
-String encodeUtf8(String message) { // library marker davegut.tpLinkCrypto, line 337
-	byte[] arr = message.getBytes("UTF8") // library marker davegut.tpLinkCrypto, line 338
-	return new String(arr) // library marker davegut.tpLinkCrypto, line 339
-} // library marker davegut.tpLinkCrypto, line 340
+String encodeUtf8(String message) { // library marker davegut.tpLinkCrypto, line 338
+	byte[] arr = message.getBytes("UTF8") // library marker davegut.tpLinkCrypto, line 339
+	return new String(arr) // library marker davegut.tpLinkCrypto, line 340
+} // library marker davegut.tpLinkCrypto, line 341
 
-int byteArrayToInteger(byte[] byteArr) { // library marker davegut.tpLinkCrypto, line 342
-	int arrayASInteger // library marker davegut.tpLinkCrypto, line 343
-	try { // library marker davegut.tpLinkCrypto, line 344
-		arrayAsInteger = ((byteArr[0] & 0xFF) << 24) + ((byteArr[1] & 0xFF) << 16) + // library marker davegut.tpLinkCrypto, line 345
-			((byteArr[2] & 0xFF) << 8) + (byteArr[3] & 0xFF) // library marker davegut.tpLinkCrypto, line 346
-	} catch (error) { // library marker davegut.tpLinkCrypto, line 347
-		Map errLog = [byteArr: byteArr, ERROR: error] // library marker davegut.tpLinkCrypto, line 348
-		logWarn("byteArrayToInteger: ${errLog}") // library marker davegut.tpLinkCrypto, line 349
-	} // library marker davegut.tpLinkCrypto, line 350
-	return arrayAsInteger // library marker davegut.tpLinkCrypto, line 351
-} // library marker davegut.tpLinkCrypto, line 352
+int byteArrayToInteger(byte[] byteArr) { // library marker davegut.tpLinkCrypto, line 343
+	int arrayASInteger // library marker davegut.tpLinkCrypto, line 344
+	try { // library marker davegut.tpLinkCrypto, line 345
+		arrayAsInteger = ((byteArr[0] & 0xFF) << 24) + ((byteArr[1] & 0xFF) << 16) + // library marker davegut.tpLinkCrypto, line 346
+			((byteArr[2] & 0xFF) << 8) + (byteArr[3] & 0xFF) // library marker davegut.tpLinkCrypto, line 347
+	} catch (error) { // library marker davegut.tpLinkCrypto, line 348
+		Map errLog = [byteArr: byteArr, ERROR: error] // library marker davegut.tpLinkCrypto, line 349
+		logWarn("byteArrayToInteger: ${errLog}") // library marker davegut.tpLinkCrypto, line 350
+	} // library marker davegut.tpLinkCrypto, line 351
+	return arrayAsInteger // library marker davegut.tpLinkCrypto, line 352
+} // library marker davegut.tpLinkCrypto, line 353
 
-byte[] integerToByteArray(value) { // library marker davegut.tpLinkCrypto, line 354
-	String hexValue = hubitat.helper.HexUtils.integerToHexString(value, 4) // library marker davegut.tpLinkCrypto, line 355
-	byte[] byteValue = hubitat.helper.HexUtils.hexStringToByteArray(hexValue) // library marker davegut.tpLinkCrypto, line 356
-	return byteValue // library marker davegut.tpLinkCrypto, line 357
-} // library marker davegut.tpLinkCrypto, line 358
+byte[] integerToByteArray(value) { // library marker davegut.tpLinkCrypto, line 355
+	String hexValue = hubitat.helper.HexUtils.integerToHexString(value, 4) // library marker davegut.tpLinkCrypto, line 356
+	byte[] byteValue = hubitat.helper.HexUtils.hexStringToByteArray(hexValue) // library marker davegut.tpLinkCrypto, line 357
+	return byteValue // library marker davegut.tpLinkCrypto, line 358
+} // library marker davegut.tpLinkCrypto, line 359
 
-def getRsaKey() { // library marker davegut.tpLinkCrypto, line 360
-	return [public: "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDGr/mHBK8aqx7UAS+g+TuAvE3J2DdwsqRn9MmAkjPGNon1ZlwM6nLQHfJHebdohyVqkNWaCECGXnftnlC8CM2c/RujvCrStRA0lVD+jixO9QJ9PcYTa07Z1FuEze7Q5OIa6pEoPxomrjxzVlUWLDXt901qCdn3/zRZpBdpXzVZtQIDAQAB", // library marker davegut.tpLinkCrypto, line 361
-			private: "MIICeAIBADANBgkqhkiG9w0BAQEFAASCAmIwggJeAgEAAoGBAMav+YcErxqrHtQBL6D5O4C8TcnYN3CypGf0yYCSM8Y2ifVmXAzqctAd8kd5t2iHJWqQ1ZoIQIZed+2eULwIzZz9G6O8KtK1EDSVUP6OLE71An09xhNrTtnUW4TN7tDk4hrqkSg/GiauPHNWVRYsNe33TWoJ2ff/NFmkF2lfNVm1AgMBAAECgYEAocxCHmKBGe2KAEkq+SKdAxvVGO77TsobOhDMWug0Q1C8jduaUGZHsxT/7JbA9d1AagSh/XqE2Sdq8FUBF+7vSFzozBHyGkrX1iKURpQFEQM2j9JgUCucEavnxvCqDYpscyNRAgqz9jdh+BjEMcKAG7o68bOw41ZC+JyYR41xSe0CQQD1os71NcZiMVqYcBud6fTYFHZz3HBNcbzOk+RpIHyi8aF3zIqPKIAh2pO4s7vJgrMZTc2wkIe0ZnUrm0oaC//jAkEAzxIPW1mWd3+KE3gpgyX0cFkZsDmlIbWojUIbyz8NgeUglr+BczARG4ITrTV4fxkGwNI4EZxBT8vXDSIXJ8NDhwJBAIiKndx0rfg7Uw7VkqRvPqk2hrnU2aBTDw8N6rP9WQsCoi0DyCnX65Hl/KN5VXOocYIpW6NAVA8VvSAmTES6Ut0CQQCX20jD13mPfUsHaDIZafZPhiheoofFpvFLVtYHQeBoCF7T7vHCRdfl8oj3l6UcoH/hXMmdsJf9KyI1EXElyf91AkAvLfmAS2UvUnhX4qyFioitjxwWawSnf+CewN8LDbH7m5JVXJEh3hqp+aLHg1EaW4wJtkoKLCF+DeVIgbSvOLJw"] // library marker davegut.tpLinkCrypto, line 362
-} // library marker davegut.tpLinkCrypto, line 363
+def getRsaKey() { // library marker davegut.tpLinkCrypto, line 361
+	return [public: "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDGr/mHBK8aqx7UAS+g+TuAvE3J2DdwsqRn9MmAkjPGNon1ZlwM6nLQHfJHebdohyVqkNWaCECGXnftnlC8CM2c/RujvCrStRA0lVD+jixO9QJ9PcYTa07Z1FuEze7Q5OIa6pEoPxomrjxzVlUWLDXt901qCdn3/zRZpBdpXzVZtQIDAQAB", // library marker davegut.tpLinkCrypto, line 362
+			private: "MIICeAIBADANBgkqhkiG9w0BAQEFAASCAmIwggJeAgEAAoGBAMav+YcErxqrHtQBL6D5O4C8TcnYN3CypGf0yYCSM8Y2ifVmXAzqctAd8kd5t2iHJWqQ1ZoIQIZed+2eULwIzZz9G6O8KtK1EDSVUP6OLE71An09xhNrTtnUW4TN7tDk4hrqkSg/GiauPHNWVRYsNe33TWoJ2ff/NFmkF2lfNVm1AgMBAAECgYEAocxCHmKBGe2KAEkq+SKdAxvVGO77TsobOhDMWug0Q1C8jduaUGZHsxT/7JbA9d1AagSh/XqE2Sdq8FUBF+7vSFzozBHyGkrX1iKURpQFEQM2j9JgUCucEavnxvCqDYpscyNRAgqz9jdh+BjEMcKAG7o68bOw41ZC+JyYR41xSe0CQQD1os71NcZiMVqYcBud6fTYFHZz3HBNcbzOk+RpIHyi8aF3zIqPKIAh2pO4s7vJgrMZTc2wkIe0ZnUrm0oaC//jAkEAzxIPW1mWd3+KE3gpgyX0cFkZsDmlIbWojUIbyz8NgeUglr+BczARG4ITrTV4fxkGwNI4EZxBT8vXDSIXJ8NDhwJBAIiKndx0rfg7Uw7VkqRvPqk2hrnU2aBTDw8N6rP9WQsCoi0DyCnX65Hl/KN5VXOocYIpW6NAVA8VvSAmTES6Ut0CQQCX20jD13mPfUsHaDIZafZPhiheoofFpvFLVtYHQeBoCF7T7vHCRdfl8oj3l6UcoH/hXMmdsJf9KyI1EXElyf91AkAvLfmAS2UvUnhX4qyFioitjxwWawSnf+CewN8LDbH7m5JVXJEh3hqp+aLHg1EaW4wJtkoKLCF+DeVIgbSvOLJw"] // library marker davegut.tpLinkCrypto, line 363
+} // library marker davegut.tpLinkCrypto, line 364
 
 // ~~~~~ end include (262) davegut.tpLinkCrypto ~~~~~
 
