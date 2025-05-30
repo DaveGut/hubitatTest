@@ -590,8 +590,8 @@ def getAllTpLinkDeviceData(List discData) { // library marker davegut.appTpLinkS
 	Map logData = [method: "getAllTpLinkDeviceData", discData: discData.size()] // library marker davegut.appTpLinkSmart, line 175
 	discData.each { Map devData -> // library marker davegut.appTpLinkSmart, line 176
 		if (devData.protocol == "KLAP") { // library marker davegut.appTpLinkSmart, line 177
-//			klapHandshake(devData.baseUrl, localHash, devData) // library marker davegut.appTpLinkSmart, line 178
-//		} else if (devData.protocol == "KLAP1") { // library marker davegut.appTpLinkSmart, line 179
+			klapHandshake(devData.baseUrl, localHash, devData) // library marker davegut.appTpLinkSmart, line 178
+		} else if (devData.protocol == "KLAP1") { // library marker davegut.appTpLinkSmart, line 179
 ////////////////// // library marker davegut.appTpLinkSmart, line 180
 log.debug "<b>=====  BEGIN KLAP2 TRANSPORT CHECK  =====</b>" // library marker davegut.appTpLinkSmart, line 181
 klapHandshake(devData.baseUrl, localHash, devData) // library marker davegut.appTpLinkSmart, line 182
